@@ -52,4 +52,17 @@ jobs:
         id: set_files
         run: |
           # 查找所有 .tar.gz 文件并将路径写入一个文件中，每行一个文件
-          find $GITHUB_WORKSPACE -name "*.tar.gz" -print0 | xargs -0 echo > file_
+          find $GITHUB_WORKSPACE -name "*.tar.gz" -print0 | xargs -0 echo > file_list.txt
+          cat file_list.txt  # 输出文件路径查看
+
+      - name: 上传所有docker镜像到release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: x86-64-docker-images
+          files: ${{ steps.set_files.outputs.files }}  # 直接从前面步骤的输出获取文件列表
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 清理临时文件
+        run: rm *-amd64.tar
