@@ -40,8 +40,8 @@ jobs:
           tag_name: DockerTarBuilder
           name: ${{ env.RELEASE_NAME }}
           body: |
-            Automatically generated release docker images for x86-64  
-            ![GitHub all releases](https://img.shields.io/github/downloads/wukongdaily/ActionDemo/total)
+            ![GitHub Release](https://img.shields.io/github/v/release/wukongdaily/ActionDemo?style=for-the-badge&logoSize=amg&labelColor=%23FFBF00&color=%2300C598)
+            Automatically generated release docker images for x86-64
           draft: false
           prerelease: false
         env:
