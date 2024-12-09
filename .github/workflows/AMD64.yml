@@ -1,4 +1,4 @@
-name: Test
+name: Get-AMD64-Docker-Images
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   pull_and_package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,21 +19,12 @@ jobs:
         run: |
           images="${{ github.event.inputs.docker_images }}"
           IFS=',' read -r -a image_array <<< "$images"
-          count=1  # 计数器初始化
-          files_list=""  # 初始化一个空字符串用于存储文件路径
           for image in "${image_array[@]}"; do
-            # 拉取镜像
             docker pull "${image}" --platform "linux/amd64"
-            # 保存为 .tar 文件，替换 / 和 : 为 _，避免文件路径问题
-            image_name="${image//\//_}"  # 将 / 替换为 _
-            image_name="${image_name//:/_}"  # 将 : 替换为 _
+            image_name="${image//\//_}"
+            image_name="${image_name//:/_}"
             docker save "${image}" -o "${image_name}-amd64.tar"
-            # 压缩为 .tar.gz 文件
-            tar -czf "${image_name}.tar.gz" "${image_name}-amd64.tar"
-            
-            # 将文件路径添加到文件列表中
-            files_list="${files_list}${GITHUB_WORKSPACE}/${image_name}.tar.gz"$'\n'  # 使用换行符分隔文件路径
-            count=$((count + 1))
+            tar -czf "${image_name}.tar.gz" "${image_name}-amd64.tar"; rm "${image_name}-amd64.tar"
           done
 
       - name: List generated files (debug step)
@@ -57,7 +48,7 @@ jobs:
       - name: Set files for release
         id: set_files
         run: |
-          echo "FILES_LIST=$files_list" >> $GITHUB_ENV  # 将文件路径列表保存到环境变量中
+          echo "FILES_LIST=$files_list" >> $GITHUB_ENV
 
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
@@ -67,6 +58,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Clean up intermediate files
-        run: rm *-amd64.tar
