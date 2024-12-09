@@ -59,8 +59,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: x86-64-docker-images
-          files: |
-            $(cat file_list.txt)  # 将文件路径按行传递给 action
+          files: ${{ steps.set_files.outputs.files }}  # 直接从前面步骤的输出获取文件列表
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
