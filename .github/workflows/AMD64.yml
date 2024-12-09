@@ -6,7 +6,7 @@ on:
       docker_images:
         description: '请填写docker镜像名称，多个用英文逗号分开'
         required: true
-        default: 'alpine:latest,alpine/curl'  # 修改默认镜像列表
+        default: 'alpine:latest,alpine/curl'
 
 jobs:
   pull_and_package:
@@ -29,15 +29,13 @@ jobs:
 
       - name: List generated files (debug step)
         run: |
-          echo "Current working directory:"
-          pwd
-          echo "Listing .tar.gz files:"
+          echo "Preparing docker images list (.tar.gz) files:"
           find $GITHUB_WORKSPACE -name "*.tar.gz"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: get-x86-64-Docker
+          tag_name: DockerTarBuilder
           name: Test For ActionDemo
           body: Automatically generated release.
           draft: false
@@ -53,7 +51,7 @@ jobs:
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
         with:
-          tag_name: get-x86-64-Docker
+          tag_name: DockerTarBuilder
           files: ${{ github.workspace }}/*.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
