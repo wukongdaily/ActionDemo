@@ -51,23 +51,16 @@ jobs:
       - name: 准备即将要发布的文件列表
         id: set_files
         run: |
-          # 查找所有 .tar.gz 文件并输出到环境变量中，使用 null 字符作为分隔符
-          files=$(find $GITHUB_WORKSPACE -name "*.tar.gz" -print0)
-          echo "Found files: $files"
-          
-          # 将文件路径按行处理
-          echo "$files" | tr '\0' '\n' > files.txt
-          
-          # 将每个文件路径按行写入环境变量
-          while IFS= read -r file; do
-            echo "FILES=$file" >> $GITHUB_ENV
-          done < files.txt
+          # 查找所有 .tar.gz 文件并将路径写入一个文件中
+          find $GITHUB_WORKSPACE -name "*.tar.gz" > file_list.txt
+          cat file_list.txt  # 输出文件路径查看
 
       - name: 上传所有docker镜像到release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: x86-64-docker-images
-          files: ${{ env.FILES }}
+          files: |
+            $(cat file_list.txt)  # 将文件路径按行传递给 action
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
