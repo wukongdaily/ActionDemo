@@ -6,7 +6,7 @@ on:
       docker_images:
         description: '请填写docker镜像名称，多个用英文逗号分开'
         required: true
-        default: 'alpine:latest,nginx'
+        default: 'alpine:latest,alpine/curl'
 
 jobs:
   pull_and_package:
@@ -29,6 +29,9 @@ jobs:
             # 压缩为 .tar.gz 文件
             tar -czf "${image_name}-amd64.tar.gz" "${image_name}-amd64.tar"
           done
+
+      - name: List generated files (debug step)
+        run: ls -l
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
