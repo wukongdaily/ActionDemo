@@ -6,7 +6,7 @@ on:
       docker_images:
         description: '请填写docker镜像名称，多个用英文逗号分开'
         required: true
-        default: 'alpine:latest,alpine/curl'
+        default: 'alpine:latest,alpine/curl,busybox:stable-glibc'
 
 jobs:
   pull_and_package:
@@ -39,16 +39,11 @@ jobs:
         with:
           tag_name: DockerTarBuilder
           name: ${{ env.RELEASE_NAME }}
-          body: Automatically generated release.
+          body: Automatically generated release docker images for x86-64
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set files for release
-        id: set_files
-        run: |
-          echo "FILES_LIST=$files_list" >> $GITHUB_ENV
 
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
