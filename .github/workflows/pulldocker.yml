@@ -22,10 +22,12 @@ jobs:
           for image in "${image_array[@]}"; do
             # 拉取镜像
             docker pull "${image}" --platform "linux/amd64"
-            # 保存为 .tar 文件
-            docker save "${image}" -o "${image//\//_}-amd64.tar"
+            # 保存为 .tar 文件，替换 / 和 : 为 _，避免文件路径问题
+            image_name="${image//\//_}"  # 将 / 替换为 _
+            image_name="${image_name//:/_}"  # 将 : 替换为 _
+            docker save "${image}" -o "${image_name}-amd64.tar"
             # 压缩为 .tar.gz 文件
-            tar -czf "${image//\//_}-amd64.tar.gz" "${image//\//_}-amd64.tar"
+            tar -czf "${image_name}-amd64.tar.gz" "${image_name}-amd64.tar"
           done
 
       - name: Create GitHub Release
