@@ -1,4 +1,4 @@
-name: TestDemo
+name: 获取x86-64平台的docker镜像
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Pull Docker Images and Package
+      - name: 拉取所有docker镜像并压缩
         run: |
           images="${{ github.event.inputs.docker_images }}"
           IFS=',' read -r -a image_array <<< "$images"
@@ -30,47 +30,44 @@ jobs:
             tar -czf "${image_name}.tar.gz" "${image_name}-amd64.tar"
           done
 
-      - name: List generated files (debug step)
+      - name: 即将要发布到release的docker镜像列表
         run: |
           echo "Current working directory:"
           pwd
           echo "Listing .tar.gz files:"
           find $GITHUB_WORKSPACE -name "*.tar.gz"
 
-      - name: Create GitHub Release
+      - name: 创建 GitHub Release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: AMD64-docker-imgaes
-          name: x86-64 docker images
-          body: Automatically generated release 
+          tag_name: x86-64-docker-images
+          name: x86-64平台docker镜像如下
+          body: 你可以使用加速站点下载release中的文件比如 https://ghp.ml1.one
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set files for release
+      - name: 准备即将要发布的文件列表
         id: set_files
         run: |
           # 查找所有 .tar.gz 文件并输出到环境变量中
           files=$(find $GITHUB_WORKSPACE -name "*.tar.gz")
           echo "Found files: $files"
           
-          # 将文件路径存储到一个数组中
-          files_array=($files)
-          
-          # 将每个文件路径保存到环境变量中
-          for file in "${files_array[@]}"; do
-            echo "FILES=${file}" >> $GITHUB_ENV
+          # 将每个文件路径按行写入环境变量
+          for file in $files; do
+            echo "FILES=$file" >> $GITHUB_ENV
           done
 
-      - name: Upload Docker images as release assets
-        uses: softprops/action-gh-release@master
+      - name: 上传所有docker镜像到release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: AMD64-docker-imgaes
-          files: ${{ env.FILES }}  # 使用环境变量中的文件路径
+          tag_name: x86-64-docker-images
+          files: ${{ env.FILES }}
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Clean up intermediate files
+      - name: 清理临时文件
         run: rm *-amd64.tar
