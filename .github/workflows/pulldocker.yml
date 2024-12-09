@@ -31,7 +31,11 @@ jobs:
           done
 
       - name: List generated files (debug step)
-        run: ls -l
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Listing .tar.gz files:"
+          find $GITHUB_WORKSPACE -name "*.tar.gz"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
