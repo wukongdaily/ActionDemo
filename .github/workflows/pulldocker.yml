@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       docker_images:
-        description: '请填写docker镜像名称 多个用英文逗号分开'
+        description: '请填写docker镜像名称，多个用英文逗号分开'
         required: true
         default: 'alpine:latest'
 
@@ -20,12 +20,13 @@ jobs:
           images="${{ github.event.inputs.docker_images }}"
           IFS=',' read -r -a image_array <<< "$images"
           for image in "${image_array[@]}"; do
+            # 拉取镜像
             docker pull "${image}" --platform "linux/amd64"
+            # 保存为 .tar 文件
             docker save "${image}" -o "${image//\//_}-amd64.tar"
+            # 压缩为 .tar.gz 文件
+            tar -czf "${image//\//_}-amd64.tar.gz" "${image//\//_}-amd64.tar"
           done
-
-      - name: Compress the TAR files
-        run: tar -czf x86-64-images.tar.gz *-amd64.tar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
@@ -38,12 +39,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload artifact as release asset
+      - name: Upload each Docker image as release asset
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          files: x86-64-images.tar.gz
+          files: |
+            ${{ github.workspace }}/*-amd64.tar.gz  # 上传所有的 .tar.gz 文件
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
