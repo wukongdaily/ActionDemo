@@ -52,15 +52,15 @@ jobs:
         id: set_files
         run: |
           # 查找所有 .tar.gz 文件并设置为输出变量
-          files=$(find $GITHUB_WORKSPACE -name "*.tar.gz" | tr '\n' ' ')
+          files=$(find $GITHUB_WORKSPACE -name "*.tar.gz")
           echo "Found files: $files"
-          echo "files=$files" >> $GITHUB_ENV  # 将文件路径输出为环境变量
+          echo "::set-output name=files::$files"  # 使用 set-output 保存文件列表
 
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          files: ${{ env.files }}  # 使用步骤输出的文件路径
+          files: ${{ steps.set_files.outputs.files }}  # 使用步骤输出的文件路径
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
