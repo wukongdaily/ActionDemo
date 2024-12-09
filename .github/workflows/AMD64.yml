@@ -41,7 +41,9 @@ jobs:
           name: ${{ env.RELEASE_NAME }}
           body: |
             ![GitHub Release](https://img.shields.io/github/v/release/wukongdaily/ActionDemo?style=for-the-badge&logoSize=amg&labelColor=%23FFBF00&color=%2300C598)
-            Automatically generated release docker images for x86-64
+            > Automatically generated release docker images for x86-64
+            ### How to use? For example
+            `docker load -i alpine_latest.tar.gz `
           draft: false
           prerelease: false
         env:
