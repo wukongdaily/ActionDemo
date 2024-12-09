@@ -1,4 +1,4 @@
-name: Get-AMD64-Docker-Images
+name: Get-ARM64-Docker-Images
 
 on:
   workflow_dispatch:
