@@ -1,4 +1,4 @@
-name: x86-64 Pull and Save Docker Image
+name: TestDemo
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
           body: Automatically generated release.
           draft: false
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Upload artifact as release asset
         uses: actions/upload-artifact@v4
         with:
