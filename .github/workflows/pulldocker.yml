@@ -6,7 +6,7 @@ on:
       docker_images:
         description: '请填写docker镜像名称，多个用英文逗号分开'
         required: true
-        default: 'alpine:latest,alpine/curl'  # 修改默认镜像列表
+        default: 'alpine:latest,alpine/curl'
 
 jobs:
   pull_and_package:
@@ -35,7 +35,7 @@ jobs:
           echo "Current working directory:"
           pwd
           echo "Listing .tar.gz files:"
-          find $GITHUB_WORKSPACE -name "*.tar.gz" -print0
+          find $GITHUB_WORKSPACE -name "*.tar.gz"
 
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@master
@@ -51,15 +51,20 @@ jobs:
       - name: 准备即将要发布的文件列表
         id: set_files
         run: |
-          # 查找所有 .tar.gz 文件并将路径写入一个文件中，每行一个文件
-          find $GITHUB_WORKSPACE -name "*.tar.gz" -print0 | xargs -0 echo > file_list.txt
-          cat file_list.txt  # 输出文件路径查看
+          # 查找所有 .tar.gz 文件并将路径写入一个文件中
+          files=$(find $GITHUB_WORKSPACE -name "*.tar.gz")
+          echo "Found files: $files"
+          # 输出为多行格式的环境变量
+          for file in $files; do
+            echo "FILES=$file" >> $GITHUB_ENV
+          done
 
       - name: 上传所有docker镜像到release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: x86-64-docker-images
-          files: ${{ steps.set_files.outputs.files }}  # 直接从前面步骤的输出获取文件列表
+          files: |
+            ${{ env.FILES }}  # 这个语法将每个文件逐行传递
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
