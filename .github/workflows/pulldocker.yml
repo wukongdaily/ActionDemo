@@ -58,7 +58,7 @@ jobs:
           # 将文件路径保存到一个变量中，以空格分隔
           files_array=($files)
           
-          # 将每个文件路径追加到环境变量中
+          # 将每个文件路径保存到环境变量中
           FILES=""
           for file in "${files_array[@]}"; do
             FILES="$FILES $file"
@@ -67,7 +67,7 @@ jobs:
           # 设置环境变量FILES，包含所有文件路径
           echo "FILES=$FILES" >> $GITHUB_ENV
 
-      - name: 上传所有docker镜像到release
+      - name: 上传每个docker镜像到release
         uses: softprops/action-gh-release@master
         with:
           tag_name: x86-64-docker-images
