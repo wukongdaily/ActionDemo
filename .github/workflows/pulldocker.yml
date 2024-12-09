@@ -54,8 +54,14 @@ jobs:
           # 查找所有 .tar.gz 文件并输出到环境变量中
           files=$(find $GITHUB_WORKSPACE -name "*.tar.gz")
           echo "Found files: $files"
-          # 将文件列表传递给后续步骤
-          echo "FILES=$files" >> $GITHUB_ENV  # 使用环境变量传递文件路径
+          
+          # 将文件路径存储到一个数组中
+          files_array=($files)
+          
+          # 将每个文件路径保存到环境变量中
+          for file in "${files_array[@]}"; do
+            echo "FILES=${file}" >> $GITHUB_ENV
+          done
 
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
