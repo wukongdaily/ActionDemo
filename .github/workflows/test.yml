@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          files: ${{ env.FILES_LIST }}  # 动态使用环境变量中的文件路径
+          files: /home/runner/work/ActionDemo/ActionDemo/*
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
