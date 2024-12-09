@@ -31,12 +31,14 @@ jobs:
         run: |
           echo "Preparing docker images list (.tar.gz) files:"
           find $GITHUB_WORKSPACE -name "*.tar.gz"
+          release_name=$(TZ="Asia/Shanghai" date +'%Y%m%d%H%M')
+          echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
           tag_name: DockerTarBuilder
-          name: Test For ActionDemo
+          name: ${{ env.RELEASE_NAME }}
           body: Automatically generated release.
           draft: false
           prerelease: false
