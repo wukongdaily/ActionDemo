@@ -29,7 +29,7 @@ jobs:
       - name: Compress the TAR files
         run: tar -czf x86-64-images.tar.gz *-amd64.tar
       - name: Create Release
-        uses: actions/create-release@v3
+        uses: actions/create-release@v1
         with:
           tag_name: v${{ github.run_number }}
           release_name: Docker Images for run ${{ github.run_number }}
