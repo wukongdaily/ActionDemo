@@ -50,9 +50,11 @@ jobs:
           tag_name: Test
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           files: |
-            ${{ github.workspace }}/*-amd64.tar.gz  # 上传所有的 .tar.gz 文件
+            ./*-amd64.tar.gz  # 上传当前目录下的所有 .tar.gz 文件
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clean up intermediate files
         run: rm *-amd64.tar
+
+
