@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "Preparing docker images list (.tar.gz) files:"
           find $GITHUB_WORKSPACE -name "*.tar.gz"
-          release_name=$(TZ="Asia/Shanghai" date +'%Y%m%d%H%M')
+          release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
           echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
 
       - name: Create GitHub Release
@@ -41,7 +41,7 @@ jobs:
           name: ${{ env.RELEASE_NAME }}
           body: |
             Automatically generated release docker images for x86-64  
-            second line
+            ![GitHub all releases](https://img.shields.io/github/downloads/wukongdaily/ActionDemo/total)
           draft: false
           prerelease: false
         env:
