@@ -41,7 +41,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          release_name: Test For ActionDemo
+          name: Test For ActionDemo
           body: Automatically generated release.
           draft: false
           prerelease: false
