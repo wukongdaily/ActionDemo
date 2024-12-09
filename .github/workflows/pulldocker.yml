@@ -49,10 +49,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload each Docker image as release asset
+        run: |
+          echo "Uploading the following files:"
+          find $GITHUB_WORKSPACE -name "*.tar.gz"
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          files: $GITHUB_WORKSPACE/*.tar.gz  # 上传所有 .tar.gz 文件
+          files: $(find $GITHUB_WORKSPACE -name "*.tar.gz" | tr '\n' ' ')  # 将文件列表传递给 action
           token: ${{ secrets.GITHUB_TOKEN }}  # 使用 GITHUB_TOKEN 进行身份验证
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
