@@ -39,7 +39,7 @@ jobs:
         with:
           tag_name: DockerTarBuilder
           name: ${{ env.RELEASE_NAME }}
-          body: Automatically generated release docker images for x86-64
+          body: Automatically generated release docker images for x86-64\n second line
           draft: false
           prerelease: false
         env:
