@@ -37,7 +37,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: Test
+          name: get-x86-64-Docker
           release_name: Test For ActionDemo
           body: Automatically generated release.
           draft: false
@@ -53,7 +53,7 @@ jobs:
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
         with:
-          tag_name: Test
+          name: get-x86-64-Docker
           files: ${{ github.workspace }}/*.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
