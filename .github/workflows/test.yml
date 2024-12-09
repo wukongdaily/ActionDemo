@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          files: $GITHUB_WORKSPACE/*.tar.gz
+          files: "${GITHUB_WORKSPACE}/*"
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
