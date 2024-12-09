@@ -19,6 +19,8 @@ jobs:
         run: |
           images="${{ github.event.inputs.docker_images }}"
           IFS=',' read -r -a image_array <<< "$images"
+          count=1  # 计数器初始化
+          files_list=""  # 初始化一个空字符串用于存储文件路径
           for image in "${image_array[@]}"; do
             # 拉取镜像
             docker pull "${image}" --platform "linux/amd64"
@@ -28,6 +30,10 @@ jobs:
             docker save "${image}" -o "${image_name}-amd64.tar"
             # 压缩为 .tar.gz 文件
             tar -czf "${image_name}.tar.gz" "${image_name}-amd64.tar"
+            
+            # 将文件路径添加到文件列表中
+            files_list="${files_list}${GITHUB_WORKSPACE}/${image_name}.tar.gz"$'\n'  # 使用换行符分隔文件路径
+            count=$((count + 1))
           done
 
       - name: List generated files (debug step)
@@ -51,23 +57,13 @@ jobs:
       - name: Set files for release
         id: set_files
         run: |
-          # 查找所有 .tar.gz 文件并输出到环境变量中
-          files=$(find $GITHUB_WORKSPACE -name "*.tar.gz")
-          echo "Found files: $files"
-          
-          # 将文件路径存储到一个数组中
-          files_array=($files)
-          
-          # 将每个文件路径保存到环境变量中
-          for file in "${files_array[@]}"; do
-            echo "FILES=${file}" >> $GITHUB_ENV
-          done
+          echo "FILES_LIST=$files_list" >> $GITHUB_ENV  # 将文件路径列表保存到环境变量中
 
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
         with:
           tag_name: Test
-          files: ${{ env.FILES }}  # 使用环境变量中的文件路径
+          files: ${{ env.FILES_LIST }}  # 动态使用环境变量中的文件路径
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
