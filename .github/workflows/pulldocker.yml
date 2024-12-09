@@ -42,7 +42,7 @@ jobs:
         with:
           tag_name: x86-64-docker-images
           name: x86-64平台docker镜像如下
-          body: 你可以使用加速站点下载release中的文件
+          body: 你可以使用加速站点下载release中的文件比如 https://ghp.ml1.one
           draft: false
           prerelease: false
         env:
@@ -66,8 +66,8 @@ jobs:
       - name: 上传所有docker镜像到release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: Test
-          files: ${{ env.FILES }}  # 使用环境变量中的文件路径
+          tag_name: x86-64-docker-images
+          files: ${{ env.FILES }}  
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
