@@ -70,7 +70,8 @@ jobs:
           if [ -z "$release_notes" ]; then
             release_notes="No release notes available."
           fi
-          echo "RELEASE_NOTES=$release_notes" >> $GITHUB_ENV
+          echo "$release_notes" > release_notes.txt
+          echo "RELEASE_NOTES_FILE=release_notes.txt" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
@@ -83,9 +84,9 @@ jobs:
             ### How to use? For example
             `sh passwall.run `
             ### Release Notes
-            ${{ env.RELEASE_NOTES }}  # 引用环境变量中的发布说明
-            draft: false
-            prerelease: false
+            $(cat ${{ env.RELEASE_NOTES_FILE }})
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
@@ -97,4 +98,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
