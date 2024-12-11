@@ -77,6 +77,9 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Remove executable permission
+        run: chmod -x makeself/passwall.run
 
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@master
