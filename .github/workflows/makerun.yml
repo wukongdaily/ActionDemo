@@ -89,12 +89,18 @@ jobs:
         run: |
           cat release_notes.md
 
+      - name: Fetch latest release tag from Passwall
+        id: fetch_latest_tag
+        run: |
+          latest_tag=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.tag_name')
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+
       - name: Generate new tag & release
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: RunFilesBuilder
+          tag_name: ${{ env.LATEST_TAG }}
           target_commitish: ${{ github.ref_name }}
           prerelease: false
           body_path: release_notes.md
