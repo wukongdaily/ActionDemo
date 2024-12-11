@@ -72,7 +72,7 @@ jobs:
           fi
           echo "$release_notes" > release_notes.txt
           echo "RELEASE_NOTES_FILE=release_notes.txt" >> $GITHUB_ENV
-
+          
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
