@@ -78,14 +78,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Remove executable permission
-        run: chmod -x makeself/passwall.run
+      - name: Compress passwall.run
+        run: gzip -9 makeself/passwall.run
 
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@master
         with:
           tag_name: RunFilesBuilder
-          files: ${{ github.workspace }}/makeself/*.run
+          files: ${{ github.workspace }}/makeself/*.run.gz
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
