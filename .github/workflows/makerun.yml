@@ -77,15 +77,12 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Compress passwall.run
-        run: gzip -9 makeself/passwall.run
 
       - name: Upload run files as release assets
-        uses: softprops/action-gh-release@master
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: RunFilesBuilder
-          files: ${{ github.workspace }}/makeself/*.run.gz
+          files: ${{ github.workspace }}/makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
