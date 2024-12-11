@@ -54,6 +54,12 @@ jobs:
           cd makeself
           ./makeself.sh passwall/ passwall.run "by github action" ./install.sh
 
+      - name: Preparing release name
+        run: |
+          release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
+          echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
+          echo "RELEASE_NAME:${{ env.RELEASE_NAME }}"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
@@ -72,7 +78,7 @@ jobs:
       - name: Upload Docker images as release assets
         uses: softprops/action-gh-release@master
         with:
-          tag_name: DockerTarBuilder
+          tag_name: RunFilesBuilder
           files: ${{ github.workspace }}/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
