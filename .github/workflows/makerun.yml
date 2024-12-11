@@ -42,19 +42,18 @@ jobs:
 
       - name: Create install.sh scripts
         run: |
-          for arch in x86_64 aarch64; do
-            cat <<EOF > passwall_${arch}/install.sh
-            #!/bin/sh
-            opkg update
-            if [ $? -ne 0 ]; then
-                echo "update failed."
-                exit 1
-            fi
-            opkg install depends/*.ipk
-            opkg install main/*.ipk
-            EOF
-            chmod +x passwall_${arch}/install.sh
-          done
+          cat <<EOF > passwall_x86_64/install.sh
+          #!/bin/sh
+          opkg update
+          if [ $? -ne 0 ]; then
+              echo "update failed。"
+              exit 1
+          fi
+          opkg install depends/*.ipk
+          opkg install main/*.ipk
+          EOF
+          chmod +x passwall_x86_64/install.sh
+          cp passwall_x86_64/install.sh passwall_aarch64/install.sh
 
       - name: Move passwall directories to makeself
         run: |
