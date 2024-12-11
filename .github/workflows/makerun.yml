@@ -63,6 +63,12 @@ jobs:
           release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
           echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
 
+
+      - name: Fetch latest release details
+        run: |
+            release_notes=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.body')
+            echo "RELEASE_NOTES=$release_notes" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@master
         with:
@@ -73,6 +79,8 @@ jobs:
             > Automatically generated release run Files
             ### How to use? For example
             `sh passwall.run `
+            ### Release Notes
+            ${{ env.RELEASE_NOTES }}
           draft: false
           prerelease: false
         env:
