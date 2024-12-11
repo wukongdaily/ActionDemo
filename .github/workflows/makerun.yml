@@ -84,7 +84,7 @@ jobs:
             ### How to use? For example
             `sh passwall.run `
             ### Release Notes
-            $(cat ${{ env.RELEASE_NOTES_FILE }})
+            $(cat release_notes.txt)
           draft: false
           prerelease: false
         env:
