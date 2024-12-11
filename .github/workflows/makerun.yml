@@ -79,7 +79,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           tag_name: RunFilesBuilder
-          files: ${{ github.workspace }}/*.run
+          files: makeself/passwall.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
