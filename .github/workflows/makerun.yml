@@ -56,7 +56,7 @@ jobs:
 
       - name: Check file size
         run: |
-            ls -lh makeself/passwall.run
+          ls -lh makeself/passwall.run
 
       - name: Preparing release name
         run: |
@@ -66,33 +66,25 @@ jobs:
       - name: Fetch latest release details
         id: fetch_release_details
         run: |
-          release_notes=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.body')  
+          release_notes=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.body')
           if [ -z "$release_notes" ]; then
             release_notes="No release notes available."
           fi
           echo "$release_notes" > release_notes.md
-          echo "RELEASE_NOTES_FILE=release_notes.md" >> $GITHUB_ENV
 
-      - name: Print release notes (md file content)
+      - name: Print release notes
         run: |
           cat release_notes.md
 
-      - name: Create GitHub Release
+      - name: Generate new tag & release
         uses: softprops/action-gh-release@master
-        with:
-          tag_name: RunFilesBuilder
-          name: ${{ env.RELEASE_NAME }}
-          body: |
-            ![GitHub Release](https://img.shields.io/github/v/release/wukongdaily/ActionDemo?style=for-the-badge&logoSize=amg&labelColor=%23FFBF00&color=%2300C598)
-            > Automatically generated release run Files
-            ### How to use? For example
-            `sh passwall.run `
-            ### Release Notes
-            $(cat ${{ env.RELEASE_NOTES_FILE }})
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: RunFilesBuilder
+          target_commitish: ${{ github.ref_name }}
+          prerelease: false
+          body_path: release_notes.md
 
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@v2.1.0
