@@ -108,7 +108,7 @@ jobs:
       - name: Upload run files as release assets
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: RunFilesBuilder
+          tag_name: ${{ env.LATEST_TAG }}
           files: makeself/passwall_*.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
