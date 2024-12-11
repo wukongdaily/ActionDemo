@@ -13,6 +13,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
+      - name: Fetch latest release tag from Passwall
+        id: fetch_latest_tag
+        run: |
+          latest_tag=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.tag_name')
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
 
       - name: Clone makeself repository
         run: git clone https://github.com/megastep/makeself.git
@@ -63,8 +69,8 @@ jobs:
       - name: Create self-extracting packages
         run: |
           cd makeself
-          ./makeself.sh passwall_x86_64/ passwall_x86_64.run "by github action" ./install.sh
-          ./makeself.sh passwall_aarch64/ passwall_aarch64.run "by github action" ./install.sh
+          ./makeself.sh passwall_x86_64/ passwall_x86_64_${{ env.LATEST_TAG }}.run "by github action" ./install.sh
+          ./makeself.sh passwall_aarch64/ passwall_aarch64_${{ env.LATEST_TAG }}.run "by github action" ./install.sh
 
       - name: Check file sizes
         run: |
@@ -88,12 +94,6 @@ jobs:
       - name: Print release notes
         run: |
           cat release_notes.md
-
-      - name: Fetch latest release tag from Passwall
-        id: fetch_latest_tag
-        run: |
-          latest_tag=$(curl -s https://api.github.com/repos/xiaorouji/openwrt-passwall/releases/latest | jq -r '.tag_name')
-          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
 
       - name: Generate new tag & release
         uses: softprops/action-gh-release@master
