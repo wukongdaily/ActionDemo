@@ -28,7 +28,7 @@ jobs:
         uses: softprops/action-gh-release@master
         with:
           tag_name: v1.0.0
-          files:*.mp4
+          files:${{ github.workspace }}/*.mp4
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
