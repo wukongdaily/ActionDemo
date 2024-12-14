@@ -6,16 +6,14 @@ on:
       - master
   workflow_dispatch:
     inputs:
-      openwrt_package:
-        description: '请输入 OpenWrt 的包版本（如 packages-24.10）'
+      package_version:
+        description: '请填写包版本'
         required: true
-        default: 'packages-24.10'  # 默认值，用户可以手动输入其他值
+        default: 'packages-24.10'  # 设置默认的 Docker 镜像列表
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # 设置为 Ubuntu 22.04
-    env:
-      OPENWRT_PACKAGE: ${{ github.event.inputs.openwrt_package }}  # 使用用户输入的包版本
+    runs-on: ubuntu-22.04  # 设置为 Ubuntu 22.0
 
     steps:
       - name: Checkout repository
@@ -31,8 +29,10 @@ jobs:
 
       - name: Download ipk files for x86_64 and a53
         run: |
+          package_version="${{ github.event.inputs.package_version }}"
+          echo $package_version
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
-          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/kiddin9/"
+          BASE_URL="https://dl.openwrt.ai/$package_version/x86_64/kiddin9/"
           # 使用 wget 获取目录页面并查找文件
           echo "Fetching directory page from $BASE_URL"
           wget -qO- "$BASE_URL" | \
