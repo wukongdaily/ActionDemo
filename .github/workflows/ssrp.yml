@@ -29,27 +29,44 @@ jobs:
       - name: Download ipk files for x86_64 and a53
         run: |
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
-          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}"
+          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/"
 
-          for prefix in "${FILE_PREFIXES[@]}"; do
-            # 处理 luci-app-ssr-plus 文件，保存在上一级目录
-            if [[ "$prefix" == "luci-app-ssr-plus" ]]; then
-              curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/${prefix}.ipk"
-              curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/${prefix}.ipk"
-            else
-              # 其他文件保存在 depends 目录
-              curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/depends/${prefix}.ipk"
-              curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/depends/${prefix}.ipk"
-            fi
+          # 使用 wget 获取目录页面并查找文件
+          wget -qO- "$BASE_URL" | \
+          while read -r LINE; do
+              for PREFIX in "${FILE_PREFIXES[@]}"; do
+                  # 使用 grep 检查文件名是否匹配
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then
+                      # 提取 href 中的文件名部分
+                      FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                      
+                      # 生成完整的文件 URL
+                      FILE_URL="${BASE_URL}${FILE}"
+                      
+                      # 打印找到的文件 URL
+                      echo "Found file: $FILE_URL"
+                      
+                      # 根据文件前缀判断文件存放路径
+                      if [[ "$PREFIX" == "luci-app-ssr-plus" ]]; then
+                          # 对于 luci-app-ssr-plus 文件，保存在 x86_64 和 a53 目录
+                          wget "$FILE_URL" -P x86_64/
+                          wget "$FILE_URL" -P a53/
+                      else
+                          # 其他文件保存在 depends 目录
+                          wget "$FILE_URL" -P x86_64/depends/
+                          wget "$FILE_URL" -P a53/depends/
+                      fi
+                  fi
+              done
           done
 
       - name: Download libopenssl3 and libudns ipk files
         run: |
-          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/base/libopenssl3*.ipk" -o "x86_64/depends/libopenssl3.ipk"
-          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/base/libopenssl3*.ipk" -o "a53/depends/libopenssl3.ipk"
+          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/base/libopenssl3*.ipk" -o "x86_64/depends/libopenssl3.ipk" || exit 1
+          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/base/libopenssl3*.ipk" -o "a53/depends/libopenssl3.ipk" || exit 1
           
-          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/packages/libudns*.ipk" -o "x86_64/depends/libudns.ipk"
-          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/packages/libudns*.ipk" -o "a53/depends/libudns.ipk"
+          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/packages/libudns*.ipk" -o "x86_64/depends/libudns.ipk" || exit 1
+          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/packages/libudns*.ipk" -o "a53/depends/libudns.ipk" || exit 1
 
       - name: Create install.sh for x86_64
         run: |
@@ -59,6 +76,8 @@ jobs:
       - name: Copy install.sh to a53
         run: |
           cp x86_64/install.sh a53/
+          ls -lh x86_64
+          ls -lh a53
 
       - name: Create self-extracting archives for x86_64 and a53
         run: |
