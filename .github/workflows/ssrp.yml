@@ -32,7 +32,7 @@ jobs:
       - name: Download ipk files for x86_64 and a53
         run: |
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
-          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}x86_64/kiddin9/"
+          BASE_URL="https://dl.openwrt.ai/$env.OPENWRT_PACKAGE/x86_64/kiddin9/"
           # 使用 wget 获取目录页面并查找文件
           echo "Fetching directory page from $BASE_URL"
           wget -qO- "$BASE_URL" | \
