@@ -30,8 +30,8 @@ jobs:
           if [ -z "$package_version" ]; then
             package_version="packages-24.10"
           fi
-          export PACKAGE_VERSION="$package_version"
-          echo "PACKAGE_VERSION=$PACKAGE_VERSION"
+          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
+         
 
       - name: Download ipk files for x86_64 and a53
         run: |
