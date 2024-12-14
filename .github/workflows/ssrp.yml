@@ -33,27 +33,21 @@ jobs:
           if [ -z "$package_version" ]; then
             package_version="packages-24.10"
           fi
-          echo $package_version
+          echo "package_version=$package_version"
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
-
-          # 排除的前缀列表
           EXCLUDE_PREFIXES=("luci-app-chinadns-ng" "luci-app-microsocks" "luci-app-mosdns" "luci-app-naiveproxy" "luci-app-redsocks2" "luci-app-shadowsocks")
-
+          
           BASE_URL_X86="https://dl.openwrt.ai/$package_version/x86_64/kiddin9/"
-
-          echo "Fetching directory page from $BASE_URL_X86"
+          echo "Fetching x86 directory page from $BASE_URL_X86"
           wget -qO- "$BASE_URL_X86" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
-                  # 使用 grep 检查文件名是否匹配
                   if [[ "$LINE" == *"$PREFIX"* ]]; then
-                      # 提取文件名
                       FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
                       if [[ -z "$FILE" ]]; then
                           # echo "No file found in line, skipping"
                           continue
                       fi
-                      # 判断文件是否以排除的前缀开头
                       exclude_file=false
                       for exclude_prefix in "${EXCLUDE_PREFIXES[@]}"; do
                           if [[ "$FILE" == $exclude_prefix* ]]; then
@@ -61,19 +55,12 @@ jobs:
                               break
                           fi
                       done
-                      # 如果是排除的文件，则跳过
                       if $exclude_file; then
-                          echo "Excluding file: $FILE"
+                          echo "Skip file: $FILE"
                           continue
                       fi
-
-                      # 生成文件 URL
                       FILE_URL="${BASE_URL_X86}${FILE}"
-
-                      # 打印找到的文件 URL
                       echo "Found file: $FILE_URL"
-
-                      # 下载文件
                       curl -L --fail "$FILE_URL" -o "x86_64/depends/$(basename $FILE_URL)" -#
                     fi
               done
@@ -82,30 +69,41 @@ jobs:
 
 
           BASE_URL_A53="https://dl.openwrt.ai/$package_version/aarch64_cortex-a53/kiddin9/"
-          echo "Fetching directory page from $BASE_URL_A53"
+          echo "Fetching a53 directory page from $BASE_URL_A53"
           wget -qO- "$BASE_URL_A53" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
-                  # 使用 grep 检查文件名是否匹配
-                  if [[ "$LINE" == *"$PREFIX"* ]]; then  
-                        FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
-                        if [[ -z "$FILE" ]]; then
-                            # echo "No file found in line, skipping"
-                            continue
-                        fi
-                        FILE_URL="${BASE_URL_A53}${FILE}"
-                        # URL
-                        echo "Found file: $FILE_URL"
-                        curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then
+                      FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                      if [[ -z "$FILE" ]]; then
+                          # echo "No file found in line, skipping"
+                          continue
+                      fi
+                      exclude_file=false
+                      for exclude_prefix in "${EXCLUDE_PREFIXES[@]}"; do
+                          if [[ "$FILE" == $exclude_prefix* ]]; then
+                              exclude_file=true
+                              break
+                          fi
+                      done
+                      if $exclude_file; then
+                          echo "Skip file: $FILE"
+                          continue
+                      fi
+                      FILE_URL="${BASE_URL_A53}${FILE}"
+                      echo "Found file: $FILE_URL"
+                      curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
                     fi
               done
           done
         
 
   
-      - name: Copy install.sh to a53
+      - name: List depends ipks
         run: |
+          echo "List x86 depends ipk files"
           ls -lh x86_64/depends/
+          echo "List a53 depends ipk files"
           ls -lh a53/depends/
 
    
