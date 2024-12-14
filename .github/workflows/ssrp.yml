@@ -1,4 +1,4 @@
-name: Build Self-Extracting Archives
+name: Build ssrp
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # 设置为 Ubuntu 22.04
     env:
       OPENWRT_PACKAGE: ${{ github.event.inputs.openwrt_package }}  # 使用用户输入的包版本
 
@@ -30,10 +30,17 @@ jobs:
         run: |
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
           BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}"
-          
+
           for prefix in "${FILE_PREFIXES[@]}"; do
-            curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/depends/${prefix}.ipk"
-            curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/depends/${prefix}.ipk"
+            # 处理 luci-app-ssr-plus 文件，保存在上一级目录
+            if [[ "$prefix" == "luci-app-ssr-plus" ]]; then
+              curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/${prefix}.ipk"
+              curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/${prefix}.ipk"
+            else
+              # 其他文件保存在 depends 目录
+              curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/depends/${prefix}.ipk"
+              curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/depends/${prefix}.ipk"
+            fi
           done
 
       - name: Download libopenssl3 and libudns ipk files
@@ -59,10 +66,12 @@ jobs:
           ./makeself.sh ../x86_64 ssrp_x86_64.run "by github action" ./install.sh
           ./makeself.sh ../a53 ssrp_a53.run "by github action" ./install.sh
           
-      - name: Upload self-extracting archives
-        uses: actions/upload-artifact@v3
+      - name: Upload all .run files to GitHub Release
+        uses: softprops/action-gh-release@v2.1.0
         with:
-          name: ssrp-archives
-          path: |
-            makeself/ssrp_x86_64.run
-            makeself/ssrp_a53.run
+          tag_name: "Test"
+          files: |
+            makeself/*.run  # 上传 makeself 目录下的所有 .run 文件
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
