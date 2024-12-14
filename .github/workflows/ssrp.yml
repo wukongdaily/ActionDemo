@@ -60,36 +60,10 @@ jobs:
               done
           done
 
-      - name: Download libopenssl3 and libudns ipk files
-        run: |
-          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/base/libopenssl3*.ipk" -o "x86_64/depends/libopenssl3.ipk" || exit 1
-          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/base/libopenssl3*.ipk" -o "a53/depends/libopenssl3.ipk" || exit 1
-          
-          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/packages/libudns*.ipk" -o "x86_64/depends/libudns.ipk" || exit 1
-          curl --fail -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/packages/libudns*.ipk" -o "a53/depends/libudns.ipk" || exit 1
-
-      - name: Create install.sh for x86_64
-        run: |
-          echo -e "#!/bin/sh\n\nopkg update\nif [ \$? -ne 0 ]; then\n    echo \"update failed\"\n    exit 1\nfi\nopkg install depends/*.ipk --force-depends\nopkg install *.ipk --force-depends" > x86_64/install.sh
-          chmod +x x86_64/install.sh
-
+  
       - name: Copy install.sh to a53
         run: |
-          cp x86_64/install.sh a53/
           ls -lh x86_64
           ls -lh a53
 
-      - name: Create self-extracting archives for x86_64 and a53
-        run: |
-          cd makeself
-          ./makeself.sh ../x86_64 ssrp_x86_64.run "by github action" ./install.sh
-          ./makeself.sh ../a53 ssrp_a53.run "by github action" ./install.sh
-          
-      - name: Upload all .run files to GitHub Release
-        uses: softprops/action-gh-release@v2.1.0
-        with:
-          tag_name: "Test"
-          files: makeself/*.run
-          token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   
