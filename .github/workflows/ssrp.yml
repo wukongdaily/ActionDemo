@@ -1,0 +1,63 @@
+name: make ssrp run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      OPENWRT_PACKAGE: "packages-24.10"  # Default, can be overridden by user input
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set package version
+        run: |
+          echo "Package version is: ${{ github.event.inputs.package_version || 'packages-24.10' }}" >> $GITHUB_ENV
+          
+      - name: Clone makeself repo
+        run: |
+          git clone https://github.com/megastep/makeself.git
+
+      - name: Create directories for x86_64 and a53
+        run: |
+          mkdir -p x86_64/depends a53/depends
+
+      - name: Download ipk files for x86_64 and a53
+        run: |
+          FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
+          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}"
+          
+          for prefix in "${FILE_PREFIXES[@]}"; do
+            curl -L "${BASE_URL}/x86_64/kiddin9/${prefix}*.ipk" -o "x86_64/depends/${prefix}.ipk"
+            curl -L "${BASE_URL}/aarch64_cortex-a53/kiddin9/${prefix}*.ipk" -o "a53/depends/${prefix}.ipk"
+          done
+
+      - name: Download libopenssl3 and libudns ipk files
+        run: |
+          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/base/libopenssl3*.ipk" -o "x86_64/depends/libopenssl3.ipk"
+          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/base/libopenssl3*.ipk" -o "a53/depends/libopenssl3.ipk"
+          
+          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/packages/libudns*.ipk" -o "x86_64/depends/libudns.ipk"
+          curl -L "https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/aarch64_cortex-a53/packages/libudns*.ipk" -o "a53/depends/libudns.ipk"
+
+      - name: Create install.sh for x86_64
+        run: |
+          echo -e "#!/bin/sh\n\nopkg update\nif [ \$? -ne 0 ]; then\n    echo \"update failed\"\n    exit 1\nfi\nopkg install depends/*.ipk --force-depends\nopkg install *.ipk --force-depends" > x86_64/install.sh
+          chmod +x x86_64/install.sh
+
+      - name: Copy install.sh to a53
+        run: |
+          cp x86_64/install.sh a53/
+
+      - name: Create self-extracting archives for x86_64 and a53
+        run: |
+          cd makeself
+          ./makeself.sh ../x86_64 ssrp_x86_64.run "by github action" ./install.sh
+          ./makeself.sh ../a53 ssrp_a53.run "by github action" ./install.sh
+          
+
