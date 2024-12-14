@@ -8,8 +8,8 @@ on:
     inputs:
       package_version:
         description: '请填写包版本'
-        required: true
-        default: 'packages-24.10'  # 设置默认的 Docker 镜像列表
+        required: false
+        default: 'packages-24.10'  
 
 jobs:
   build:
