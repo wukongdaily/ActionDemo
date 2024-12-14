@@ -70,8 +70,7 @@ jobs:
         uses: softprops/action-gh-release@v2.1.0
         with:
           tag_name: "Test"
-          files: |
-            makeself/*.run  # 上传 makeself 目录下的所有 .run 文件
+          files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
