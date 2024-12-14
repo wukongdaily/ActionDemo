@@ -69,8 +69,6 @@ jobs:
               done
           done
 
-
-
           BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/kiddin9/"
           echo "Fetching a53 directory page from $BASE_URL_A53"
           wget -qO- "$BASE_URL_A53" | \
@@ -170,12 +168,36 @@ jobs:
               done
           done
 
-  
       - name: List depends ipks
         run: |
           echo "List x86 depends ipk files"
           ls -lh x86_64/depends/
           echo "List a53 depends ipk files"
           ls -lh a53/depends/
+          mv x86_64/depends/luci-app-ssr-plus*.ipk x86_64
+          mv a53/depends/luci-app-ssr-plus*.ipk a53
+      
+      - name: Create install.sh 
+        run: |
+            echo -e "#!/bin/sh\n\nopkg update\nif [ \$? -ne 0 ]; then\n    echo \"update failed\"\n    exit 1\nfi\nopkg install depends/*.ipk --force-depends\nopkg install *.ipk --force-depends" > x86_64/install.sh
+            chmod +x x86_64/install.sh
+            cp x86_64/install.sh a53/
+  
+      - name: Create self-extracting archives
+        run: |
+            mv -f x86_64 makeself
+            mv -f a53 makeself
+            cd makeself
+            ./makeself.sh x86_64/ ssrp_x86_64.run "by github action" ./install.sh
+            ./makeself.sh a53/ ssrp_a53.run "by github action" ./install.sh
+      
+      - name: Upload all .run files to GitHub Release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: "Test"
+          files: makeself/*.run
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
    
