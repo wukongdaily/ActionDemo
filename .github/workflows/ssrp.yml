@@ -23,21 +23,24 @@ jobs:
         run: |
           git clone https://github.com/megastep/makeself.git
 
-      - name: Create directories for x86_64 and a53
+      - name: Create directories for x86_64 and a53 and set PACKAGE_VERSION
         run: |
           mkdir -p x86_64/depends a53/depends
-
-      - name: Download ipk files for x86_64 and a53
-        run: |
           package_version="${{ github.event.inputs.package_version }}"
           if [ -z "$package_version" ]; then
             package_version="packages-24.10"
           fi
-          echo "package_version=$package_version"
+          export PACKAGE_VERSION="$package_version"
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION"
+
+      - name: Download ipk files for x86_64 and a53
+        run: |
+          echo "Get PACKAGE_VERSION=$PACKAGE_VERSION"
+          
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
           EXCLUDE_PREFIXES=("luci-app-chinadns-ng" "luci-app-microsocks" "luci-app-mosdns" "luci-app-naiveproxy" "luci-app-redsocks2" "luci-app-shadowsocks")
           
-          BASE_URL_X86="https://dl.openwrt.ai/$package_version/x86_64/kiddin9/"
+          BASE_URL_X86="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/kiddin9/"
           echo "Fetching x86 directory page from $BASE_URL_X86"
           wget -qO- "$BASE_URL_X86" | \
           while IFS= read -r LINE; do
@@ -68,7 +71,7 @@ jobs:
 
 
 
-          BASE_URL_A53="https://dl.openwrt.ai/$package_version/aarch64_cortex-a53/kiddin9/"
+          BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/kiddin9/"
           echo "Fetching a53 directory page from $BASE_URL_A53"
           wget -qO- "$BASE_URL_A53" | \
           while IFS= read -r LINE; do
@@ -93,7 +96,7 @@ jobs:
                       FILE_URL="${BASE_URL_A53}${FILE}"
                       echo "Found file: $FILE_URL"
                       curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
-                    fi
+                  fi
               done
           done
         
@@ -101,7 +104,7 @@ jobs:
         run: |
           echo "downloading libopenssl3 ipk"
           FILE_PREFIXES=("libopenssl3" "libudns")
-          BASE_URL_X86="https://dl.openwrt.ai/$package_version/x86_64/base/"
+          BASE_URL_X86="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/base/"
           wget -qO- "$BASE_URL_X86" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
@@ -117,7 +120,7 @@ jobs:
                     fi
               done
           done
-          BASE_URL_A53="https://dl.openwrt.ai/$package_version/aarch64_cortex-a53/base/"
+          BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/base/"
           wget -qO- "$BASE_URL_A53" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
@@ -134,7 +137,7 @@ jobs:
               done
           done
           echo "downloading libudns ipk"
-          BASE_URL_X86="https://dl.openwrt.ai/$package_version/x86_64/packages/"
+          BASE_URL_X86="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/packages/"
           wget -qO- "$BASE_URL_X86" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
@@ -150,7 +153,7 @@ jobs:
                     fi
               done
           done
-          BASE_URL_A53="https://dl.openwrt.ai/$package_version/aarch64_cortex-a53/packages/"
+          BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/packages/"
           wget -qO- "$BASE_URL_A53" | \
           while IFS= read -r LINE; do
               for PREFIX in "${FILE_PREFIXES[@]}"; do
