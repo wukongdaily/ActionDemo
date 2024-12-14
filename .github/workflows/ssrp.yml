@@ -1,24 +1,23 @@
-name: make ssrp run
+name: Build Self-Extracting Archives
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      openwrt_package:
+        description: '请输入 OpenWrt 的包版本（如 packages-24.10）'
+        required: true
+        default: 'packages-24.10'  # 默认值，用户可以手动输入其他值
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      OPENWRT_PACKAGE: "packages-24.10"
-      
+      OPENWRT_PACKAGE: ${{ github.event.inputs.openwrt_package }}  # 使用用户输入的包版本
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set package version
-        run: |
-          echo "Package version is: ${{ github.event.inputs.package_version || 'packages-24.10' }}" >> $GITHUB_ENV
-          
       - name: Clone makeself repo
         run: |
           git clone https://github.com/megastep/makeself.git
@@ -60,4 +59,10 @@ jobs:
           ./makeself.sh ../x86_64 ssrp_x86_64.run "by github action" ./install.sh
           ./makeself.sh ../a53 ssrp_a53.run "by github action" ./install.sh
           
-
+      - name: Upload self-extracting archives
+        uses: actions/upload-artifact@v3
+        with:
+          name: ssrp-archives
+          path: |
+            makeself/ssrp_x86_64.run
+            makeself/ssrp_a53.run
