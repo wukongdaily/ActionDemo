@@ -198,11 +198,14 @@ jobs:
             ./makeself.sh a53/ ssrp_a53.run "by github action" ./install.sh
             release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
             echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
+            ipk_file=$(ls x86_64/*.ipk)
+            appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
+            echo "APP_VERSION=$appversion" >> $GITHUB_ENV
       
       - name: Upload all .run files to GitHub Release
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: ssrp
+          tag_name: ${{ env.APP_VERSION }}
           name: ${{ env.RELEASE_NAME }}
           body: "![Github](https://img.shields.io/badge/SSRP.run-123456?logo=github&logoColor=fff&labelColor=blue&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.top/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/ssrp/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
           files: makeself/*.run
