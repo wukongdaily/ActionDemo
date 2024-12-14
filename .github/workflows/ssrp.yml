@@ -1,19 +1,25 @@
-name: Build ssrp
+#=================================================
+# https://github.com/wukongdaily/RunFilesBuilder
+# Description: Build RunFiles using GitHub Actions
+# Lisence: MIT
+# Author: wukongdaily
+# Blog: wkdaily.cpolar.top
+#=================================================
+name: Make ShadowsocksPlus+ run files
 
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       package_version:
-        description: '请填写包版本'
+        description: '这里是包版本'
         required: false
         default: 'packages-24.10'  
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # 设置为 Ubuntu 22.0
+    runs-on: ubuntu-22.04 
 
     steps:
       - name: Checkout repository
@@ -190,11 +196,15 @@ jobs:
             cd makeself
             ./makeself.sh x86_64/ ssrp_x86_64.run "by github action" ./install.sh
             ./makeself.sh a53/ ssrp_a53.run "by github action" ./install.sh
+            release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
+            echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
       
       - name: Upload all .run files to GitHub Release
         uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: "Test"
+          tag_name: ssrp
+          name: ${{ env.RELEASE_NAME }}
+          body: "![Github](https://img.shields.io/badge/SSRP.run-123456?logo=github&logoColor=fff&labelColor=blue&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.top/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/ssrp/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
           files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
