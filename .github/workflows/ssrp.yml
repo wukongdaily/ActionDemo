@@ -194,13 +194,15 @@ jobs:
             mv -f x86_64 makeself
             mv -f a53 makeself
             cd makeself
-            ./makeself.sh x86_64/ ssrp_x86_64.run "by github action" ./install.sh
-            ./makeself.sh a53/ ssrp_a53.run "by github action" ./install.sh
-            release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
-            echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
             ipk_file=$(ls x86_64/*.ipk)
             appversion=$(basename "$ipk_file" | grep -oP '\d+\.\d+\.\d+')
             echo "APP_VERSION=$appversion" >> $GITHUB_ENV
+            release_name=$(TZ="Asia/Shanghai" date +'%Y-%m-%d %H:%M Build')
+            echo "RELEASE_NAME=$release_name" >> $GITHUB_ENV
+            ./makeself.sh x86_64/ ssrp_x86_64_${{ env.APP_VERSION }}.run "by github action" ./install.sh
+            ./makeself.sh a53/ ssrp_a53_${{ env.APP_VERSION }}.run "by github action" ./install.sh
+            
+            
       
       - name: Upload all .run files to GitHub Release
         uses: softprops/action-gh-release@v2.1.0
