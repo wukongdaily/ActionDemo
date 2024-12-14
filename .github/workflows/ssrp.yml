@@ -1,6 +1,9 @@
 name: Build ssrp
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       openwrt_package:
@@ -32,27 +35,19 @@ jobs:
           BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/x86_64/kiddin9/"
           # 使用 wget 获取目录页面并查找文件
           echo "Fetching directory page from $BASE_URL"
-          wget -O- "$BASE_URL" | \
+          wget -qO- "$BASE_URL" | \
           while IFS= read -r LINE; do
-            echo "Processing line: $LINE"  # 调试输出当前行
               for PREFIX in "${FILE_PREFIXES[@]}"; do
                   # 使用 grep 检查文件名是否匹配
-                  if [[ "$LINE" == *"$PREFIX"* ]]; then
-                        # 提取 href 中的文件名部分
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then  
                         FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
-                        
-                        # 如果没有提取到文件名，跳过该行
                         if [[ -z "$FILE" ]]; then
-                            echo "No file found in line, skipping"
+                            # echo "No file found in line, skipping"
                             continue
                         fi
-                        
-                        # 生成完整的文件 URL
                         FILE_URL="${BASE_URL}${FILE}"
-                        
-                        # 打印找到的文件 URL
+                        # URL
                         echo "Found file: $FILE_URL"
-                        
                         wget "$FILE_URL" -P x86_64/depends/
                     fi
                 done
@@ -62,7 +57,6 @@ jobs:
   
       - name: Copy install.sh to a53
         run: |
-          ls -lh x86_64
-          ls -lh a53
+          ls -lh x86_64/depends/
 
    
