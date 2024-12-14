@@ -33,7 +33,6 @@ jobs:
           echo $package_version
           FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
           BASE_URL="https://dl.openwrt.ai/$package_version/x86_64/kiddin9/"
-          # 使用 wget 获取目录页面并查找文件
           echo "Fetching directory page from $BASE_URL"
           wget -qO- "$BASE_URL" | \
           while IFS= read -r LINE; do
@@ -48,7 +47,27 @@ jobs:
                         FILE_URL="${BASE_URL}${FILE}"
                         # URL
                         echo "Found file: $FILE_URL"
-                        wget "$FILE_URL" -P x86_64/depends/
+                        #wget -q "$FILE_URL" -P x86_64/depends/
+                        curl -L --fail "$FILE_URL" -o "x86_64/depends/$(basename $FILE_URL)" -#
+                    fi
+                done
+            done
+          BASE_URL_A53="https://dl.openwrt.ai/$package_version/aarch64_cortex-a53/kiddin9/"
+          echo "Fetching directory page from $BASE_URL_A53"
+          wget -qO- "$BASE_URL_A53" | \
+          while IFS= read -r LINE; do
+              for PREFIX in "${FILE_PREFIXES[@]}"; do
+                  # 使用 grep 检查文件名是否匹配
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then  
+                        FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                        if [[ -z "$FILE" ]]; then
+                            # echo "No file found in line, skipping"
+                            continue
+                        fi
+                        FILE_URL="${BASE_URL_A53}${FILE}"
+                        # URL
+                        echo "Found file: $FILE_URL"
+                        curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
                     fi
                 done
             done
@@ -58,5 +77,6 @@ jobs:
       - name: Copy install.sh to a53
         run: |
           ls -lh x86_64/depends/
+          ls -lh a53/depends/
 
    
