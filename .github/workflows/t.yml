@@ -1,0 +1,53 @@
+name: Download IPK Files
+
+on:
+  workflow_dispatch:
+    inputs:
+      openwrt_package:
+        description: '请输入 OpenWrt 的包版本（如 packages-24.10）'
+        required: true
+        default: 'packages-24.10'
+
+jobs:
+  download_ipks:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install wget
+        run: sudo apt-get install -y wget
+
+      - name: Download IPK files
+        run: |
+          #!/bin/bash
+
+          # 目标文件服务器的 URL
+          BASE_URL="https://dl.openwrt.ai/packages-24.10/${{ github.event.inputs.openwrt_package }}/x86_64/kiddin9/"
+
+          # 需要匹配的文件名前缀列表
+          FILE_PREFIXES=("chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core")
+
+          # 使用 wget 获取目录页面
+          wget -qO- "$BASE_URL" | \
+              # 循环检查每个文件名前缀
+              while read -r LINE; do
+                  # 遍历所有文件名前缀，检查文件是否匹配
+                  for PREFIX in "${FILE_PREFIXES[@]}"; do
+                      # 使用 grep 检查文件名是否包含在文件列表中
+                      if [[ "$LINE" == *"$PREFIX"* ]]; then
+                          # 提取 href 中的文件名部分
+                          FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                          
+                          # 生成完整的文件 URL
+                          FILE_URL="${BASE_URL}${FILE}"
+                          
+                          # 打印文件 URL
+                          echo "Found file: $FILE_URL"
+                          
+                          # 下载文件到指定目录
+                          wget "$FILE_URL" -P ./downloads/  # 下载到当前目录下的 downloads 文件夹
+                      fi
+                  done
+              done
+        shell: bash
