@@ -26,19 +26,18 @@ jobs:
         run: |
           mkdir -p x86_64/depends a53/depends
 
-          - name: Download ipk files for x86_64 and a53
-          run: |
-            FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
-            BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/"
-            
-            # 使用 wget 获取目录页面并查找文件
-            echo "Fetching directory page from $BASE_URL"
-            wget -O- "$BASE_URL" | \
-            while IFS= read -r LINE; do
-                echo "Processing line: $LINE"  # 调试输出当前行
-                for PREFIX in "${FILE_PREFIXES[@]}"; do
-                    # 使用 grep 检查文件名是否匹配
-                    if [[ "$LINE" == *"$PREFIX"* ]]; then
+      - name: Download ipk files for x86_64 and a53
+        run: |
+          FILE_PREFIXES=("dns2tcp" "lua-neturl" "chinadns-ng" "dns2socks" "hysteria" "ipt2socks" "microsocks" "mosdns" "naiveproxy" "redsocks2" "shadowsocksr-libev" "shadowsocks-rust" "shadow-tls" "simple-obfs-client" "tcping" "trojan" "tuic-client" "v2ray-plugin" "xray-core" "luci-app-ssr-plus")
+          BASE_URL="https://dl.openwrt.ai/${{ env.OPENWRT_PACKAGE }}/"
+          # 使用 wget 获取目录页面并查找文件
+          echo "Fetching directory page from $BASE_URL"
+          wget -O- "$BASE_URL" | \
+          while IFS= read -r LINE; do
+            echo "Processing line: $LINE"  # 调试输出当前行
+              for PREFIX in "${FILE_PREFIXES[@]}"; do
+                  # 使用 grep 检查文件名是否匹配
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then
                         # 提取 href 中的文件名部分
                         FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
                         
