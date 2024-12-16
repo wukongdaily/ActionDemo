@@ -101,6 +101,27 @@ jobs:
                   fi
               done
           done
+
+      - name: download sing-box for a53 form aarch64_generic dir
+        run: |
+          SINGBOX_PREFIXES=("sing-box")
+          BASE_URL_A53="https://dl.openwrt.ai/packages-24.10/aarch64_generic/kiddin9/"
+          echo "for sing-box Fetching a53 directory page from $BASE_URL_A53"
+          wget -qO- "$BASE_URL_A53" | \
+          while IFS= read -r LINE; do
+              for PREFIX in "${SINGBOX_PREFIXES[@]}"; do
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then
+                      FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                      if [[ -z "$FILE" ]]; then
+                          # echo "No file found in line, skipping"
+                          continue
+                      fi
+                      FILE_URL="${BASE_URL_A53}${FILE}"
+                      echo "Found file: $FILE_URL"
+                      curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
+                  fi
+              done
+          done
         
       - name: mv pw2 to main dir
         run: |
