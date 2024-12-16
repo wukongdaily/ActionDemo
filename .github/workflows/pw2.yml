@@ -110,6 +110,76 @@ jobs:
           ls x86_64
           echo "List main dir ipk files for a53"
           ls a53
+      
+      - name: downloads libopenssl3 & libudns ipk
+        run: |
+          echo "downloading libopenssl3 ipk"
+          FILE_PREFIXES=("libopenssl3" "libudns")
+          BASE_URL_X86="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/base/"
+          wget -qO- "$BASE_URL_X86" | \
+          while IFS= read -r LINE; do
+            for PREFIX in "${FILE_PREFIXES[@]}"; do
+                if [[ "$LINE" == *"$PREFIX"* ]]; then
+                    FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                    if [[ -z "$FILE" ]]; then
+                        # echo "No file found in line, skipping"
+                        continue
+                    fi
+                    FILE_URL="${BASE_URL_X86}${FILE}"
+                    echo "Found file: $FILE_URL"
+                    curl -L --fail "$FILE_URL" -o "x86_64/depends/$(basename $FILE_URL)" -#
+                  fi
+            done
+          done
+          BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/base/"
+          wget -qO- "$BASE_URL_A53" | \
+          while IFS= read -r LINE; do
+              for PREFIX in "${FILE_PREFIXES[@]}"; do
+                  if [[ "$LINE" == *"$PREFIX"* ]]; then
+                      FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                      if [[ -z "$FILE" ]]; then
+                          # echo "No file found in line, skipping"
+                          continue
+                      fi
+                      FILE_URL="${BASE_URL_A53}${FILE}"
+                      echo "Found file: $FILE_URL"
+                      curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
+                    fi
+              done
+          done
+          echo "downloading libudns ipk"
+          BASE_URL_X86="https://dl.openwrt.ai/$PACKAGE_VERSION/x86_64/packages/"
+          wget -qO- "$BASE_URL_X86" | \
+          while IFS= read -r LINE; do
+            for PREFIX in "${FILE_PREFIXES[@]}"; do
+                if [[ "$LINE" == *"$PREFIX"* ]]; then
+                    FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                    if [[ -z "$FILE" ]]; then
+                        # echo "No file found in line, skipping"
+                        continue
+                    fi
+                    FILE_URL="${BASE_URL_X86}${FILE}"
+                      echo "Found file: $FILE_URL"
+                      curl -L --fail "$FILE_URL" -o "x86_64/depends/$(basename $FILE_URL)" -#
+                fi
+            done
+          done
+          BASE_URL_A53="https://dl.openwrt.ai/$PACKAGE_VERSION/aarch64_cortex-a53/packages/"
+          wget -qO- "$BASE_URL_A53" | \
+          while IFS= read -r LINE; do
+            for PREFIX in "${FILE_PREFIXES[@]}"; do
+                if [[ "$LINE" == *"$PREFIX"* ]]; then
+                    FILE=$(echo "$LINE" | grep -oP 'href="\K[^"]*')
+                    if [[ -z "$FILE" ]]; then
+                        # echo "No file found in line, skipping"
+                        continue
+                    fi
+                    FILE_URL="${BASE_URL_A53}${FILE}"
+                    echo "Found file: $FILE_URL"
+                    curl -L --fail "$FILE_URL" -o "a53/depends/$(basename $FILE_URL)" -#
+                fi
+            done
+          done
           
 
       - name: List depends ipks
@@ -145,7 +215,7 @@ jobs:
         uses: softprops/action-gh-release@v2.1.0
         with:
           tag_name: ${{ env.APP_VERSION }}
-          name: ${{ env.RELEASE_NAME }}
+          name: "${{ env.RELEASE_NAME }} PassWall2"
           body: "![Github](https://img.shields.io/badge/passwall2.run-123456?logo=github&logoColor=fff&labelColor=AB5ED8&style=for-the-badge) [![Github](https://img.shields.io/badge/国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge)](https://wkdaily.cpolar.top/archives/1) ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/wukongdaily/RunFilesBuilder/${{ env.APP_VERSION }}/total?style=for-the-badge&labelColor=black&color=%2325c2a0)"
           files: makeself/*.run
           token: ${{ secrets.GITHUB_TOKEN }}
