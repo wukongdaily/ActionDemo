@@ -57,10 +57,11 @@ jobs:
           tar -xzvf Meta/master/meta/clash-linux-amd64.tar.gz -C openclash-x86
           tar -xzvf Meta/master/meta/clash-linux-arm64.tar.gz -C openclash-a53
           tar -xzvf Meta/master/meta/clash-linux-armv7.tar.gz -C openclash-v7
+          ls openclash-v7
           mv openclash-x86/clash openclash-x86/clash_meta
           mv openclash-a53/clash openclash-a53/clash_meta
           mv openclash-v7/clash openclash-v7/clash_meta
-          ls openclash-v7
+          
 
       - name: Create install.sh script save to openclash directory
         run: |
