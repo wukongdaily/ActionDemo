@@ -1,35 +1,24 @@
-name: SSH and Halo Deployment
+name: Deploy Halo Docker Container
 
 on:
-  workflow_dispatch: # 手动触发
+  workflow_dispatch:  # 手动触发工作流
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04  # 使用已预装 Docker 的 Ubuntu 22.04
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Disable needrestart
-      run: sudo systemctl disable needrestart.service needrestart.timer || true
-      
-    - name: Run Halo Server
+    - name: Run Halo Docker container
       run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk wget
-        wget -q https://github.com/halo-dev/halo/releases/latest/download/halo-2.7.3.jar -O halo.jar
-        nohup java -jar halo.jar --server.port=8090 > halo.log 2>&1 &
-
-    - name: Install and Configure SSH
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openssh-server
-        sudo service ssh start
-        echo 'root:password' | sudo chpasswd # 修改 root 密码为 "password"
-        sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-        sudo service ssh restart
-       
+        docker run -d \
+          --restart unless-stopped \
+          --name halo \
+          -p 8090:8090 \
+          -e JAVA_OPTS="-Xms512m -Xmx1024m" \
+          halo/halo:latest
 
     - name: Install ngrok
       run: |
@@ -42,10 +31,10 @@ jobs:
       run: |
         ngrok config add-authtoken 2qVHcdtl1O216lq18DfIKbEDf93_7RWJLoanfALo28D711aHB
 
-    - name: Expose SSH and Halo with ngrok
+    - name: Expose Halo and SSH with ngrok
       run: |
-        ngrok tcp 22 > /dev/null &
         ngrok http 8090 > /dev/null &
+        ngrok tcp 22 > /dev/null &
         sleep 5
         echo "Halo public URL:"
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
@@ -53,4 +42,4 @@ jobs:
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="tcp") | .public_url'
 
     - name: Keep Action Running
-      run: sleep 3600 # 保持虚拟机运行 1 小时
+      run: sleep 3600  # 保持容器运行 1 小时
