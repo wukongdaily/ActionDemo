@@ -102,4 +102,4 @@ jobs:
           curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
       - name: Keep Action Running
-        run: sleep 3600*6  
+        run: sleep $((3600*6))
