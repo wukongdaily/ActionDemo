@@ -31,15 +31,12 @@ jobs:
       run: |
         ngrok config add-authtoken 2qVHcdtl1O216lq18DfIKbEDf93_7RWJLoanfALo28D711aHB
 
-    - name: Expose Halo and SSH with ngrok
+    - name: Expose Halo with ngrok HTTP
       run: |
         ngrok http 8090 > /dev/null &
-        ngrok tcp 22 > /dev/null &
         sleep 5
         echo "Halo public URL:"
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
-        echo "SSH public URL:"
-        curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="tcp") | .public_url'
 
     - name: Keep Action Running
       run: sleep 3600  # 保持容器运行 1 小时
