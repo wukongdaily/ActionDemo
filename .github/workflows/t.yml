@@ -11,6 +11,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Disable needrestart
+      run: sudo systemctl disable needrestart.service needrestart.timer || true
+      
     - name: Run Halo Server
       run: |
         sudo apt-get update
@@ -26,7 +29,7 @@ jobs:
         echo 'root:password' | sudo chpasswd # 修改 root 密码为 "password"
         sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
         sudo service ssh restart
-        sudo needrestart -r a || true
+       
 
     - name: Install ngrok
       run: |
