@@ -81,6 +81,7 @@ jobs:
 
       - name: Create ngrok configuration file
         run: |
+          mkdir -p ~/.ngrok2
           echo "authtoken: 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs" > ~/.ngrok2/ngrok.yml
           echo "tunnels:" >> ~/.ngrok2/ngrok.yml
           echo "  1panel:" >> ~/.ngrok2/ngrok.yml
