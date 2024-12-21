@@ -64,7 +64,7 @@ jobs:
           cd 1panel-${VERSION}-linux-${architecture}
 
           # 设置语言为简体中文并执行安装
-          wget -O install2.sh https://mygist.cpolar.top/wukong/c10cd20be8424964890b646e81bc18d9/raw/HEAD/install2.sh
+          wget -O install2.sh https://wkrepo.vip.cpolar.cn/shell/install2.sh
           chmod +x install2.sh
           sudo /bin/bash install2.sh
 
