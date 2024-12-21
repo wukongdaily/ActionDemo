@@ -18,7 +18,7 @@ jobs:
           --name halo \
           -p 8090:8090 \
           -e JAVA_OPTS="-Xms512m -Xmx1024m" \
-          halo/halo:latest
+          halohub/halo:latest
 
     - name: Install ngrok
       run: |
