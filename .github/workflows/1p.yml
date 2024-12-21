@@ -75,10 +75,6 @@ jobs:
           sudo apt update
           sudo apt install -y ngrok
 
-      - name: Login to ngrok
-        run: |
-          ngrok config add-authtoken 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs
-
       - name: Create ngrok configuration file
         run: |
           mkdir -p ~/.ngrok2
