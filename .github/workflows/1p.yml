@@ -77,8 +77,11 @@ jobs:
 
       - name: Create ngrok configuration file
         run: |
+          # 确保 ngrok 配置目录存在
           mkdir -p ~/.ngrok2
-          echo "authtoken: 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs" > ~/.ngrok2/ngrok.yml
+          # 创建 ngrok 配置文件，确保定义了隧道和版本
+          echo "version: \"2\"" > ~/.ngrok2/ngrok.yml
+          echo "authtoken: 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs" >> ~/.ngrok2/ngrok.yml
           echo "tunnels:" >> ~/.ngrok2/ngrok.yml
           echo "  1panel:" >> ~/.ngrok2/ngrok.yml
           echo "    proto: http" >> ~/.ngrok2/ngrok.yml
@@ -88,7 +91,8 @@ jobs:
           echo "    addr: 8090" >> ~/.ngrok2/ngrok.yml
           echo "  mysql:" >> ~/.ngrok2/ngrok.yml
           echo "    proto: tcp" >> ~/.ngrok2/ngrok.yml
-          echo "    addr: 3306" >> ~/.ngrok2/ngrok.yml
+          # 输出配置文件内容以确保创建成功
+          cat ~/.ngrok2/ngrok.yml
 
       - name: Start ngrok with all tunnels
         run: |
@@ -96,6 +100,7 @@ jobs:
           sleep 5
           echo "Public URL for 1Panel, Halo and MySQL:"
           curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
+
 
       - name: Keep Action Running
         run: sleep $((3600*6))
