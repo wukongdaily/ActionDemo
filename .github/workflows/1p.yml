@@ -86,12 +86,7 @@ jobs:
           echo "  1panel:" >> ~/.ngrok2/ngrok.yml
           echo "    proto: http" >> ~/.ngrok2/ngrok.yml
           echo "    addr: 10086" >> ~/.ngrok2/ngrok.yml
-          echo "  halo:" >> ~/.ngrok2/ngrok.yml
-          echo "    proto: http" >> ~/.ngrok2/ngrok.yml
-          echo "    addr: 8090" >> ~/.ngrok2/ngrok.yml
-          echo "  mysql:" >> ~/.ngrok2/ngrok.yml
-          echo "    proto: tcp" >> ~/.ngrok2/ngrok.yml
-          echo "    addr: localhost:3306" >> ~/.ngrok2/ngrok.yml
+          
           # 输出配置文件内容以确保创建成功
           cat ~/.ngrok2/ngrok.yml
 
