@@ -83,7 +83,7 @@ jobs:
         run: |
           ngrok http 10086 > /dev/null &
           ngrok http 8090 > /dev/null &
-          ngrok http 3306 > /dev/null &
+          
           sleep 5
           echo "1panel public URL:"
           curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
