@@ -1,23 +1,31 @@
-name: Deploy Halo Blog
+name: SSH and Halo Deployment
 
 on:
-  workflow_dispatch: # 手动触发部署
+  workflow_dispatch: # 手动触发
 
 jobs:
-  deploy-halo:
+  deploy:
     runs-on: ubuntu-22.04
+
     steps:
-      
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Run Halo Container
+    - name: Run Halo Server
       run: |
-       docker run -d \
-          --name halo \
-          -p 8090:8090 \
-          -v "$HOME/.halo:/root/.halo" \
-          halohub/halo:latest
+        sudo apt-get update
+        sudo apt-get install -y openjdk-11-jdk wget
+        wget -q https://github.com/halo-dev/halo/releases/latest/download/halo-2.7.3.jar -O halo.jar
+        nohup java -jar halo.jar --server.port=8090 > halo.log 2>&1 &
+
+    - name: Install and Configure SSH
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openssh-server
+        sudo service ssh start
+        echo 'root:password' | sudo chpasswd # 修改 root 密码为 "password"
+        sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+        sudo service ssh restart
 
     - name: Install ngrok
       run: |
@@ -26,8 +34,19 @@ jobs:
         sudo apt update
         sudo apt install -y ngrok
 
-    - name: Expose Halo with ngrok
+    - name: Login to ngrok
       run: |
-        ngrok http 8090 &
+        ngrok config add-authtoken 2qVHcdtl1O216lq18DfIKbEDf93_7RWJLoanfALo28D711aHB
+
+    - name: Expose SSH and Halo with ngrok
+      run: |
+        ngrok tcp 22 > /dev/null &
+        ngrok http 8090 > /dev/null &
         sleep 5
-        curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[0].public_url'
+        echo "Halo public URL:"
+        curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
+        echo "SSH public URL:"
+        curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="tcp") | .public_url'
+
+    - name: Keep Action Running
+      run: sleep 3600 # 保持虚拟机运行 1 小时
