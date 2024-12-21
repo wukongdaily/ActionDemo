@@ -64,4 +64,27 @@ jobs:
           cd 1panel-${VERSION}-linux-${architecture}
 
           # 设置语言为简体中文并执行安装
-          sudo LANG=zh_CN.UTF-8 /bin/bash install.sh
+          wget -O install2.sh https://mygist.cpolar.top/wukong/c10cd20be8424964890b646e81bc18d9/raw/HEAD/install2.sh
+          chmod +x install2.sh
+          /bin/bash install2.sh
+
+      - name: Install ngrok
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc > /dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list > /dev/null
+          sudo apt update
+          sudo apt install -y ngrok
+
+      - name: Login to ngrok
+        run: |
+          ngrok config add-authtoken 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs
+
+      - name: Expose Halo with ngrok HTTP
+        run: |
+          ngrok http 10086 > /dev/null &
+          sleep 5
+          echo "1panel public URL:"
+          curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
+
+      - name: Keep Action Running
+        run: sleep 7200  
