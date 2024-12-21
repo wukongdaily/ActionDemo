@@ -79,25 +79,26 @@ jobs:
         run: |
           ngrok config add-authtoken 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs
 
-      - name: Expose 1Panel with ngrok HTTP
+      - name: Create ngrok configuration file
         run: |
-          ngrok http 10086 > /dev/null &
-          sleep 5
-          echo "Public URL for 1Panel:"
-          curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
+          echo "authtoken: 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs" > ~/.ngrok2/ngrok.yml
+          echo "tunnels:" >> ~/.ngrok2/ngrok.yml
+          echo "  1panel:" >> ~/.ngrok2/ngrok.yml
+          echo "    proto: http" >> ~/.ngrok2/ngrok.yml
+          echo "    addr: 10086" >> ~/.ngrok2/ngrok.yml
+          echo "  halo:" >> ~/.ngrok2/ngrok.yml
+          echo "    proto: http" >> ~/.ngrok2/ngrok.yml
+          echo "    addr: 8090" >> ~/.ngrok2/ngrok.yml
+          echo "  mysql:" >> ~/.ngrok2/ngrok.yml
+          echo "    proto: tcp" >> ~/.ngrok2/ngrok.yml
+          echo "    addr: 3306" >> ~/.ngrok2/ngrok.yml
 
-      - name: Wait for 5 minutes
-        run: sleep 300
-
-      - name: Expose MySQL (3306) and Halo (8090) with ngrok HTTP
+      - name: Start ngrok with all tunnels
         run: |
-          # 启动 ngrok 隧道并暴露 3306 端口
-          ngrok tcp 3306 > /dev/null &
-          # 启动 ngrok 隧道并暴露 8090 端口
-          ngrok http 8090 > /dev/null &
+          ngrok start --all > /dev/null &
           sleep 5
-          echo "Public URL for MySQL (3306) and Halo (8090):"
+          echo "Public URL for 1Panel, Halo and MySQL:"
           curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
       - name: Keep Action Running
-        run: sleep 3600*6  # 让 Action 保持运行
+        run: sleep 3600*6  
