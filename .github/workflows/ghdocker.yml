@@ -27,9 +27,11 @@ jobs:
             }
         }
         EOF
+        cat nginx.conf
 
     - name: Run nginx-proxy Docker container
       run: |
+        ls 
         docker run -d \
             --name nginx-proxy \
             -p 8080:80 \
