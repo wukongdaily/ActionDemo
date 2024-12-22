@@ -29,11 +29,16 @@ jobs:
         EOF
         cat reverse-proxy.conf
 
+    - name: Check if reverse-proxy.conf is correctly mounted
+      run: |
+        docker exec nginx-proxy cat /etc/nginx/conf.d/reverse-proxy.conf
+
+    - name: Remove default nginx config (if necessary)
+      run: |
+        docker exec nginx-proxy rm /etc/nginx/conf.d/default.conf
+
     - name: Run nginx-proxy Docker container
       run: |
-        # 打印当前目录内容以确认 reverse-proxy.conf 文件存在
-        ls -l
-        # 启动 Nginx 容器并挂载配置文件
         docker run -d \
             --name nginx-proxy \
             -p 8080:80 \
@@ -45,10 +50,11 @@ jobs:
 
     - name: Debug nginx configuration
       run: |
-        # 查看容器日志帮助调试
+        docker exec nginx-proxy nginx -T  # 查看所有加载的配置
+
+    - name: Debug nginx logs
+      run: |
         docker logs nginx-proxy
-        # 测试 Nginx 配置
-        docker exec nginx-proxy nginx -t || echo "Nginx configuration test failed"
 
     - name: Install ngrok
       run: |
