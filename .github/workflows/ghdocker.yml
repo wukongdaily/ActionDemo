@@ -29,14 +29,6 @@ jobs:
         EOF
         cat reverse-proxy.conf
 
-    - name: Check if reverse-proxy.conf is correctly mounted
-      run: |
-        docker exec nginx-proxy cat /etc/nginx/conf.d/reverse-proxy.conf
-
-    - name: Remove default nginx config (if necessary)
-      run: |
-        docker exec nginx-proxy rm /etc/nginx/conf.d/default.conf
-
     - name: Run nginx-proxy Docker container
       run: |
         docker run -d \
@@ -47,6 +39,14 @@ jobs:
     
     - name: Check running containers
       run: docker ps
+
+    - name: Check if reverse-proxy.conf is correctly mounted
+      run: |
+        docker exec nginx-proxy cat /etc/nginx/conf.d/reverse-proxy.conf
+
+    - name: Remove default nginx config (if necessary)
+      run: |
+        docker exec nginx-proxy rm /etc/nginx/conf.d/default.conf
 
     - name: Debug nginx configuration
       run: |
