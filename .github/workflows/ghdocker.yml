@@ -13,10 +13,11 @@ jobs:
 
     - name: Run Halo Docker container
       run: |
-        docker run -d --name="gh-proxy-py" \
-          -p 0.0.0.0:8090:80 \
-          --restart=always \
-          hunsh/gh-proxy-py:latest
+        docker run -d \
+            --name nginx-proxy \
+            -p 8080:80 \
+            -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf \
+            nginx:latest
 
     - name: Install ngrok
       run: |
@@ -27,14 +28,14 @@ jobs:
 
     - name: Login to ngrok
       run: |
-        ngrok config add-authtoken 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs
+        ngrok config add-authtoken 2qZR0FVfkTlsvBgZEMekdCGyxzE_6mYLLzLoQ9cPQ6sFyj7E6
 
     - name: Expose Halo with ngrok HTTP
       run: |
-        ngrok http 8090 > /dev/null &
+        ngrok http 8080 > /dev/null &
         sleep 5
         echo "Halo public URL:"
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
     - name: Keep Action Running
-      run: sleep 7200  
+      run: sleep 21600  
