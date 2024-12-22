@@ -11,9 +11,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Create nginx.conf
+    - name: Create reverse-proxy.conf
       run: |
-        cat <<'EOF' > nginx.conf
+        cat <<'EOF' > reverse-proxy.conf
         server {
             listen 80;
             server_name localhost;
@@ -27,31 +27,28 @@ jobs:
             }
         }
         EOF
-        cat nginx.conf  # 输出 nginx.conf 文件内容，以便调试
+        cat reverse-proxy.conf
 
     - name: Run nginx-proxy Docker container
       run: |
-        # 确保 nginx.conf 文件存在
-        ls -l nginx.conf
-        # 运行 Nginx 容器
+        # 打印当前目录内容以确认 reverse-proxy.conf 文件存在
+        ls -l
+        # 启动 Nginx 容器并挂载配置文件
         docker run -d \
             --name nginx-proxy \
             -p 8080:80 \
-            -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf \
+            -v $(pwd)/reverse-proxy.conf:/etc/nginx/conf.d/reverse-proxy.conf \
             nginx:latest
     
     - name: Check running containers
-      run: docker ps  # 显示正在运行的容器
+      run: docker ps
 
     - name: Debug nginx configuration
       run: |
-        # 测试 Nginx 配置是否正确
-        docker exec nginx-proxy nginx -t || echo "Nginx configuration test failed"
-    
-    - name: Output Nginx container logs
-      run: |
-        # 输出 Nginx 容器的日志，帮助调试
+        # 查看容器日志帮助调试
         docker logs nginx-proxy
+        # 测试 Nginx 配置
+        docker exec nginx-proxy nginx -t || echo "Nginx configuration test failed"
 
     - name: Install ngrok
       run: |
@@ -66,11 +63,10 @@ jobs:
 
     - name: Expose Halo with ngrok HTTP
       run: |
-        # 使用 ngrok 将端口 8080 暴露为公共 URL
         ngrok http 8080 > /dev/null &
-        sleep 5  # 等待 ngrok 启动
+        sleep 5
         echo "Halo public URL:"
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
     - name: Keep Action Running
-      run: sleep 21600   # 保持 Action 持续运行 6 小时，以防 ngrok 连接中断
+      run: sleep 21600
