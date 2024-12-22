@@ -13,7 +13,7 @@ jobs:
     
     - name: Create nginx.conf
       run: |
-        cat <<EOF > nginx.conf
+        cat <<'EOF' > nginx.conf
         server {
             listen 80;
             server_name localhost;
