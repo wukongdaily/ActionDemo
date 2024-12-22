@@ -1,4 +1,4 @@
-name: Deploy Halo Docker Container
+name: Deploy gh
 
 on:
   workflow_dispatch:  # 手动触发工作流
@@ -13,12 +13,10 @@ jobs:
 
     - name: Run Halo Docker container
       run: |
-        docker run -d \
-          --restart unless-stopped \
-          --name halo \
-          -p 8090:8090 \
-          -e JAVA_OPTS="-Xms512m -Xmx1024m" \
-          halohub/halo:latest
+        docker run -d --name="gh-proxy-py" \
+          -p 0.0.0.0:8090:80 \
+          --restart=always \
+          hunsh/gh-proxy-py:latest
 
     - name: Install ngrok
       run: |
@@ -29,7 +27,7 @@ jobs:
 
     - name: Login to ngrok
       run: |
-        ngrok config add-authtoken 2qVHcdtl1O216lq18DfIKbEDf93_7RWJLoanfALo28D711aHB
+        ngrok config add-authtoken 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs
 
     - name: Expose Halo with ngrok HTTP
       run: |
@@ -39,4 +37,4 @@ jobs:
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
     - name: Keep Action Running
-      run: sleep 3600  # 保持容器运行 1 小时
+      run: sleep 7200  
