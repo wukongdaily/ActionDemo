@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
+
     - name: Create nginx.conf
       run: |
         cat <<'EOF' > nginx.conf
@@ -27,11 +27,13 @@ jobs:
             }
         }
         EOF
-        cat nginx.conf
+        cat nginx.conf  # 输出 nginx.conf 文件内容，以便调试
 
     - name: Run nginx-proxy Docker container
       run: |
-        ls 
+        # 确保 nginx.conf 文件存在
+        ls -l nginx.conf
+        # 运行 Nginx 容器
         docker run -d \
             --name nginx-proxy \
             -p 8080:80 \
@@ -39,11 +41,17 @@ jobs:
             nginx:latest
     
     - name: Check running containers
-      run: docker ps
+      run: docker ps  # 显示正在运行的容器
 
     - name: Debug nginx configuration
       run: |
+        # 测试 Nginx 配置是否正确
         docker exec nginx-proxy nginx -t || echo "Nginx configuration test failed"
+    
+    - name: Output Nginx container logs
+      run: |
+        # 输出 Nginx 容器的日志，帮助调试
+        docker logs nginx-proxy
 
     - name: Install ngrok
       run: |
@@ -58,10 +66,11 @@ jobs:
 
     - name: Expose Halo with ngrok HTTP
       run: |
+        # 使用 ngrok 将端口 8080 暴露为公共 URL
         ngrok http 8080 > /dev/null &
-        sleep 5
+        sleep 5  # 等待 ngrok 启动
         echo "Halo public URL:"
         curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
 
     - name: Keep Action Running
-      run: sleep 21600  
+      run: sleep 21600   # 保持 Action 持续运行 6 小时，以防 ngrok 连接中断
