@@ -35,13 +35,12 @@ jobs:
           EOF
           make defconfig
 
-
       - name: Build ImageBuilder
         run: |
           cd lede
           make tools/install -j$(nproc)
           make toolchain/install -j$(nproc)
-          make imagebuilder -j$(nproc)
+          make -j1 V=s imagebuilder
 
       - name: Upload ImageBuilder
         uses: actions/upload-artifact@v4
