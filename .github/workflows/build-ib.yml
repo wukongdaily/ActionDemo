@@ -28,9 +28,13 @@ jobs:
       - name: Setup x86_64 config
         run: |
           cd lede
+          cat <<EOF > .config
+          CONFIG_TARGET_x86=y
+          CONFIG_TARGET_x86_64=y
+          CONFIG_TARGET_x86_64_Generic=y
+          EOF
           make defconfig
-          sed -i 's/.*CONFIG_TARGET.*/CONFIG_TARGET_x86=y\nCONFIG_TARGET_x86_64=y/' .config
-          make defconfig
+
 
       - name: Build ImageBuilder
         run: |
