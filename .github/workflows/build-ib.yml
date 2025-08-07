@@ -1,0 +1,45 @@
+name: Build Lede ImageBuilder x86_64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
+            gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev
+
+      - name: Clone Lede source
+        run: |
+          git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+
+      - name: Update feeds
+        run: |
+          cd lede
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Setup x86_64 config
+        run: |
+          cd lede
+          make defconfig
+          sed -i 's/.*CONFIG_TARGET.*/CONFIG_TARGET_x86=y\nCONFIG_TARGET_x86_64=y/' .config
+          make defconfig
+
+      - name: Build ImageBuilder
+        run: |
+          cd lede
+          make tools/install -j$(nproc)
+          make toolchain/install -j$(nproc)
+          make imagebuilder -j$(nproc)
+
+      - name: Upload ImageBuilder
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagebuilder-x86_64
+          path: lede/bin/targets/**/lede-imagebuilder-*.tar.xz
