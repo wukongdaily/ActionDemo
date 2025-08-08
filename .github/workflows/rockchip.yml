@@ -59,5 +59,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: imagebuilder-${{ matrix.platform }}
-          path: lede/bin/targets/rockchip/armv8/openwrt-imagebuilder-rockchip-armv8.Linux-x86_64.tar.xz
+          path: |
+            lede/bin/targets/**/*.tar.xz
+            lede/bin/targets/**/*.tar.zst
+            lede/bin/targets/**/*.bin
+          #lede/bin/targets/rockchip/armv8/openwrt-imagebuilder-rockchip-armv8.Linux-x86_64.tar.xz
           
