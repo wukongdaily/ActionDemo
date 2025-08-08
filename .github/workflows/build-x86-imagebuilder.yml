@@ -15,18 +15,6 @@ jobs:
             gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
           sudo python3 -m pip install setuptools
 
-      - name: Cache build
-        uses: actions/cache@v4
-        with:
-          path: |
-            lede/staging_dir
-            lede/build_dir
-            lede/tmp
-            dl
-          key: ${{ runner.os }}-lede-${{ hashFiles('lede/.config') }}
-          restore-keys: |
-            ${{ runner.os }}-lede-
-
       - name: Clone Lede source
         run: |
           git clone --depth=1 https://github.com/coolsnowwolf/lede.git
