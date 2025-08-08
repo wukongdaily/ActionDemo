@@ -1,0 +1,76 @@
+name: Build rk-filogic ImageBuilder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - rockchip
+          - mediatek_filogic
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
+            gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
+          sudo python3 -m pip install setuptools
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: |
+            lede/staging_dir
+            lede/build_dir
+            lede/tmp
+            dl
+          key: ${{ runner.os }}-lede-${{ matrix.platform }}-${{ hashFiles('lede/.config') }}
+          restore-keys: |
+            ${{ runner.os }}-lede-${{ matrix.platform }}-
+
+      - name: Clone Lede source
+        run: git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+
+      - name: Update feeds
+        run: |
+          cd lede
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Setup config for ${{ matrix.platform }}
+        run: |
+          cd lede
+          if [ "${{ matrix.platform }}" = "rockchip" ]; then
+            cat <<EOF > .config
+            CONFIG_TARGET_rockchip=y
+            CONFIG_TARGET_rockchip_armv8=y
+            CONFIG_TARGET_rockchip_armv8_DEVICE_radxa_e20c=y
+            CONFIG_IB=y
+            EOF
+          elif [ "${{ matrix.platform }}" = "mediatek_filogic" ]; then
+            cat <<EOF > .config
+            CONFIG_TARGET_mediatek=y
+            CONFIG_TARGET_mediatek_filogic=y
+            CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-mt3000=y
+            CONFIG_IB=y
+            EOF
+          else
+            echo "Unknown platform"
+            exit 1
+          fi
+          make defconfig
+
+      - name: Build ImageBuilder for ${{ matrix.platform }}
+        run: |
+          cd lede
+          make -j$(nproc) V=s
+
+      - name: Upload ImageBuilder ${{ matrix.platform }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagebuilder-${{ matrix.platform }}
+          path: lede/bin/targets/**/lede-imagebuilder-*.tar.*
