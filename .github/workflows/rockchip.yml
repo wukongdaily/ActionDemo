@@ -1,4 +1,4 @@
-name: Build rockchip ImageBuilder
+name: Build filogic ImageBuilder
 
 on:
   workflow_dispatch:
@@ -9,8 +9,8 @@ jobs:
     strategy:
       matrix:
         platform:
-          - rockchip
-          #- mediatek_filogic
+          #- rockchip
+          - mediatek_filogic
 
     steps:
       - name: Install dependencies
@@ -23,9 +23,7 @@ jobs:
           libreadline-dev libssl-dev libtool llvm lrzsz msmtp ninja-build p7zip p7zip-full patch pkgconf \
           python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion \
           swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
-          #sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
-            #gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
-          #sudo python3 -m pip install setuptools
+          
 
       - name: Clone Lede source
         run: git clone --depth=1 https://github.com/coolsnowwolf/lede.git
