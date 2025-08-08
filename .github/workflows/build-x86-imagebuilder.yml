@@ -31,6 +31,10 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/coolsnowwolf/lede.git
 
+      - name: Add helloworld feed (for luci-app-ssr-plus)
+        run: |
+          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
+
       - name: Update feeds
         run: |
           cd lede
