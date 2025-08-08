@@ -1,102 +1,63 @@
-name: 1Panel Installation
+name: Build Imagebuilder with ssrp
 
 on:
   workflow_dispatch:
 
 jobs:
-  install_1panel:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - rockchip
+          - mediatek_filogic
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download and Install 1Panel
+      - name: Install dependencies
         run: |
-          # 固定架构为 x86_64
-          architecture="amd64"
-          INSTALL_MODE="stable"
-
-          # 获取最新版本
-          VERSION=$(curl -s https://resource.fit2cloud.com/1panel/package/${INSTALL_MODE}/latest)
-          HASH_FILE_URL="https://resource.fit2cloud.com/1panel/package/${INSTALL_MODE}/${VERSION}/release/checksums.txt"
-
-          if [[ "x${VERSION}" == "x" ]];then
-              echo "获取最新版本失败，请稍候重试"
-              exit 1
-          fi
-
-          package_file_name="1panel-${VERSION}-linux-${architecture}.tar.gz"
-          package_download_url="https://resource.fit2cloud.com/1panel/package/${INSTALL_MODE}/${VERSION}/release/${package_file_name}"
-          expected_hash=$(curl -s "$HASH_FILE_URL" | grep "$package_file_name" | awk '{print $1}')
-
-          if [ -f ${package_file_name} ];then
-              actual_hash=$(sha256sum "$package_file_name" | awk '{print $1}')
-              if [[ "$expected_hash" == "$actual_hash" ]];then
-                  echo "安装包已存在，跳过下载"
-                  rm -rf 1panel-${VERSION}-linux-${architecture}
-                  tar zxvf ${package_file_name}
-                  cd 1panel-${VERSION}-linux-${architecture}
-                  sudo /bin/bash install.sh
-                  exit 0
-              else
-                  echo "已存在安装包，但是哈希值不一致，开始重新下载"
-                  rm -f ${package_file_name}
-              fi
-          fi
-
-          echo "开始下载 1Panel ${VERSION} 版本在线安装包"
-          echo "安装包下载地址： ${package_download_url}"
-
-          curl -LOk -o ${package_file_name} ${package_download_url}
-          curl -sfL https://resource.fit2cloud.com/installation-log.sh | sh -s 1p install ${VERSION}
-          if [ ! -f ${package_file_name} ];then
-              echo "下载安装包失败，请稍候重试。"
-              exit 1
-          fi
-
-          tar zxvf ${package_file_name}
-          if [ $? != 0 ];then
-              echo "下载安装包失败，请稍候重试。"
-              rm -f ${package_file_name}
-              exit 1
-          fi
-          cd 1panel-${VERSION}-linux-${architecture}
-
-          # 设置语言为简体中文并执行安装
-          wget -O install2.sh https://wkrepo.vip.cpolar.cn/shell/install2.sh
-          chmod +x install2.sh
-          sudo /bin/bash install2.sh
-
-      - name: Install ngrok
-        run: |
-          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc > /dev/null
-          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list > /dev/null
           sudo apt update
-          sudo apt install -y ngrok
+          sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
+            gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
+          sudo python3 -m pip install setuptools
 
-      - name: Create ngrok configuration file
+      - name: Clone Lede source
+        run: git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+
+      - name: Add helloworld feed (for luci-app-ssr-plus)
         run: |
-          # 确保 ngrok 配置目录存在
-          mkdir -p ~/.ngrok2
-          # 创建 ngrok 配置文件，确保定义了隧道和版本
-          echo "version: \"2\"" > ~/.ngrok2/ngrok.yml
-          echo "authtoken: 2qVQLubYiKrvHPPOR5gtsUFo8kU_33sC4hyV6febEuRF1Nfxs" >> ~/.ngrok2/ngrok.yml
-          echo "tunnels:" >> ~/.ngrok2/ngrok.yml
-          echo "  1panel:" >> ~/.ngrok2/ngrok.yml
-          echo "    proto: http" >> ~/.ngrok2/ngrok.yml
-          echo "    addr: 10086" >> ~/.ngrok2/ngrok.yml
-          
-          # 输出配置文件内容以确保创建成功
-          cat ~/.ngrok2/ngrok.yml
+          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
 
-      - name: Start ngrok with all tunnels
+      - name: Update feeds
         run: |
-          ngrok start --all > /dev/null &
-          sleep 5
-          echo "Public URL for 1Panel, Halo and MySQL:"
-          curl -s http://127.0.0.1:4040/api/tunnels | jq '.tunnels[] | select(.proto=="https") | .public_url'
+          cd lede
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
+      - name: Setup config for ${{ matrix.platform }}
+        run: |
+          cd lede
+          if [ "${{ matrix.platform }}" = "rockchip" ]; then
+            echo "CONFIG_TARGET_rockchip=y" > .config
+            echo "CONFIG_TARGET_rockchip_armv8=y" >> .config
+            echo "CONFIG_TARGET_rockchip_armv8_DEVICE_radxa_e20c=y" >> .config
+            echo "CONFIG_IB=y" >> .config
+            echo "CONFIG_PACKAGE_luci-app-ssr-plus=m" >> .config
+          elif [ "${{ matrix.platform }}" = "mediatek_filogic" ]; then
+            echo "CONFIG_TARGET_mediatek=y" > .config
+            echo "CONFIG_TARGET_mediatek_filogic=y" >> .config
+            echo "CONFIG_TARGET_mediatek_filogic_DEVICE_glinet_gl-mt3000=y" >> .config
+            echo "CONFIG_IB=y" >> .config
+            echo "CONFIG_PACKAGE_luci-app-ssr-plus=m" >> .config
+          fi
+          make defconfig
 
-      - name: Keep Action Running
-        run: sleep $((3600*6))
+      - name: Build ImageBuilder for ${{ matrix.platform }}
+        run: |
+          cd lede
+          make -j$(nproc) V=s
+
+      - name: Upload ImageBuilder ${{ matrix.platform }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagebuilder-${{ matrix.platform }}
+          path: lede/bin/targets/**/lede-imagebuilder-*.tar.*
