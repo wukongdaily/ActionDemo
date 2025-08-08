@@ -10,7 +10,7 @@ jobs:
       matrix:
         platform:
           - rockchip
-          - mediatek_filogic
+          #- mediatek_filogic
 
     steps:
       - name: Install dependencies
