@@ -62,6 +62,10 @@ jobs:
         run: |
           grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
 
+      - name: Add helloworld feed (for luci-app-ssr-plus)
+        run: |
+          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
+
       - name: Update feeds
         run: |
           cd lede
