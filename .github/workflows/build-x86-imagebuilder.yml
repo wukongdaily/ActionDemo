@@ -51,7 +51,7 @@ jobs:
 
       - name: Copy Makefile into lede ImaegBuilder
         run: |
-          tree -L 1
+          tree
           cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
           echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
           grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
