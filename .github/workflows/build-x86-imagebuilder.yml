@@ -24,12 +24,12 @@ jobs:
         run: |
           echo "Current dir:"
           pwd
-          echo "List target/imagebuilder/files content:"
-          ls -l target/imagebuilder/files/
+          echo "List  github.workspace  target/imagebuilder/files content:"
+          ls -l ${{ github.workspace }}/target/imagebuilder/files/
           echo "Try to copy Makefile:"
-          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
+          cp ${{ github.workspace }}/target/imagebuilder/files/Makefile ${{ github.workspace }}/lede/target/imagebuilder/files/Makefile
           echo "Copy succeeded, check content:"
-          head -20 lede/target/imagebuilder/files/Makefile
+          grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
 
       - name: Add helloworld feed (for luci-app-ssr-plus)
         run: |
