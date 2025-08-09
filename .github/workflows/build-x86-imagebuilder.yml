@@ -15,7 +15,7 @@ jobs:
         run: |
            ls -lsh
            tree
-           exit 1
+           
       - name: Install dependencies
         run: |
           sudo apt update
@@ -51,7 +51,8 @@ jobs:
 
       - name: Copy Makefile into lede ImaegBuilder
         run: |
-          cp ./target/imagebuilder/files/Makefile ./lede/target/imagebuilder/files/Makefile
+          tree -L 1
+          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
           echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
           grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
           
