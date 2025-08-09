@@ -10,7 +10,11 @@ jobs:
     steps:
       - name: Checkout this repo
         uses: actions/checkout@v3
-        
+
+      - name: Print List
+         run:|
+           ls -lsh
+           exit 1
       - name: Install dependencies
         run: |
           sudo apt update
