@@ -76,7 +76,7 @@ jobs:
         run: |
           cp rockchip.config lede/.config
           cd lede
-          make defconfig
+          
 
       - name: Copy Makefile into lede
         run: |
