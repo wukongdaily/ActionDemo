@@ -1,4 +1,4 @@
-name: Build filogic ImageBuilder
+name: Build Rockchip ImageBuilder
 
 on:
   workflow_dispatch:
@@ -9,10 +9,13 @@ jobs:
     strategy:
       matrix:
         platform:
-          #- rockchip
-          - mediatek_filogic
+          - rockchip
+          #- mediatek_filogic
 
     steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+    
       - name: Install dependencies
         run: |
           sudo apt update
@@ -50,6 +53,12 @@ jobs:
           fi
           make defconfig
 
+      - name: Copy Makefile into lede
+        run: |
+          cp ./target/imagebuilder/files/Makefile ./lede/target/imagebuilder/files/Makefile
+          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
+          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
+
       - name: Build ImageBuilder for ${{ matrix.platform }}
         run: |
           cd lede
@@ -61,7 +70,6 @@ jobs:
           name: imagebuilder-${{ matrix.platform }}
           path: |
             lede/bin/targets/**/*.tar.xz
-            lede/bin/targets/**/*.tar.zst
-            lede/bin/targets/**/*.bin
-          #lede/bin/targets/rockchip/armv8/openwrt-imagebuilder-rockchip-armv8.Linux-x86_64.tar.xz
+            lede/bin/targets/**/*.manifest
+            lede/bin/targets/**/*.json
           
