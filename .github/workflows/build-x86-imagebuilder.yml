@@ -8,19 +8,33 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      # 释放磁盘空间
+      - name: Free Disk Space
+        run: |
+          echo "=== Before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf /usr/local/lib/android
+          sudo apt-get clean
+          echo "=== After cleanup ==="
+          df -h
+
       - name: Checkout this repo
         uses: actions/checkout@v3
 
       - name: Print List
         run: |
-           ls -lsh
-           tree
+          ls -lsh
+          tree
 
+      # 浅克隆 Lede 源码，减少磁盘占用
       - name: Clone Lede source
         run: |
-          git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+          git clone --depth=1 --single-branch -b master https://github.com/coolsnowwolf/lede.git
       
-      - name: Copy Makefile into lede ImaegBuilder
+      - name: Copy Makefile into lede ImageBuilder
         run: |
           echo "Try to copy Makefile:"
           cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
@@ -60,6 +74,13 @@ jobs:
         run: |
           cd lede
           make -j$(nproc) V=s
+
+      # 上传前先清理临时文件释放空间
+      - name: Clean up build cache
+        run: |
+          cd lede
+          rm -rf build_dir tmp staging_dir
+          df -h
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
