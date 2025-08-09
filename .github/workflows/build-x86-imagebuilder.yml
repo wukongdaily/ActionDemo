@@ -20,6 +20,13 @@ jobs:
           sudo apt-get clean
           echo "=== After cleanup ==="
           df -h
+      # 挂载 /mnt 到工作目录
+      - name: Link /mnt to root
+        run: |
+          sudo mkdir -p /mnt/work
+          sudo mount --bind /mnt /home/runner/work
+          echo "=== After mount ==="
+          df -h
 
       - name: Checkout this repo
         uses: actions/checkout@v3
