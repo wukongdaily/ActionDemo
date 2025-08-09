@@ -13,8 +13,34 @@ jobs:
           #- mediatek_filogic
 
     steps:
+      # 编译前释放磁盘空间
+      - name: Free Disk Space
+        run: |
+          echo "=== Before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf /usr/local/lib/android
+          sudo apt-get clean
+          echo "=== After cleanup ==="
+          df -h
+      # 先 checkout 代码（保证目录和 _actions 存在）
       - name: Checkout this repo
         uses: actions/checkout@v3
+
+      # 搬移工作目录内容到 /mnt 并挂载，保证后续构建都在大空间
+      - name: Move workspace to /mnt and mount
+        run: |
+          sudo mkdir -p /mnt/ib-lede
+          echo "Before rsync:"
+          df -h /mnt
+          sudo rsync -a --delete $GITHUB_WORKSPACE/ /mnt/ib-lede/
+          echo "After rsync:"
+          df -h /mnt
+          sudo mount --bind /mnt/ib-lede $GITHUB_WORKSPACE
+          echo "After mount:"
+          df -h $GITHUB_WORKSPACE
     
       - name: Install dependencies
         run: |
@@ -27,9 +53,14 @@ jobs:
           python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion \
           swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
           
-
+      # 同步修改后的分支
       - name: Clone Lede source
-        run: git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+        run: |
+          git clone --depth=1 --single-branch -b rootfspartsize https://github.com/wkccd/lede.git
+      
+      - name: Cat lede ImageBuilder Makefile
+        run: |
+          grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
 
       - name: Update feeds
         run: |
