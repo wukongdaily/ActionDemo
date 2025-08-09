@@ -75,6 +75,7 @@ jobs:
             echo "CONFIG_TARGET_rockchip=y" > .config
             echo "CONFIG_TARGET_rockchip_armv8=y" >> .config
             echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
+            echo "CONFIG_TARGET_ALL_PROFILES=y" >> .config
             echo "CONFIG_IB=y" >> .config
           elif [ "${{ matrix.platform }}" = "mediatek_filogic" ]; then
             echo "CONFIG_TARGET_mediatek=y" > .config
