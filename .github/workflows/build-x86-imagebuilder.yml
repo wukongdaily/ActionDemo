@@ -14,6 +14,7 @@ jobs:
       - name: Print List
         run: |
            ls -lsh
+           tree
            exit 1
       - name: Install dependencies
         run: |
