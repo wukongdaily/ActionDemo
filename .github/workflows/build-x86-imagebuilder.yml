@@ -22,11 +22,14 @@ jobs:
       
       - name: Copy Makefile into lede ImaegBuilder
         run: |
-          ls -lah
-          tree target
-          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/
-          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
-          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
+          echo "Current dir:"
+          pwd
+          echo "List target/imagebuilder/files content:"
+          ls -l target/imagebuilder/files/
+          echo "Try to copy Makefile:"
+          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
+          echo "Copy succeeded, check content:"
+          head -20 lede/target/imagebuilder/files/Makefile
 
       - name: Add helloworld feed (for luci-app-ssr-plus)
         run: |
