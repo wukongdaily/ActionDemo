@@ -20,27 +20,29 @@ jobs:
           sudo apt-get clean
           echo "=== After cleanup ==="
           df -h
-     
-      - name: Prepare actions dir
-        run: |
-          sudo mkdir -p /mnt/work/_actions
-          sudo rsync -a /home/runner/work/_actions/ /mnt/work/_actions/ || true
 
-      - name: Link /mnt to root
-        run: |
-          sudo mkdir -p /mnt/work
-          sudo mount --bind /mnt /home/runner/work
-          echo "=== After mount ==="
-          df -h
-
+      # 先 checkout 代码，保证工作目录和 _actions 目录存在
       - name: Checkout this repo
         uses: actions/checkout@v3
+
+      # 搬移工作区内容到 /mnt 并挂载，保证大空间使用
+      - name: Move workspace to /mnt and mount
+        run: |
+          sudo mkdir -p /mnt/lede-workspace
+          echo "Before rsync:"
+          df -h /mnt
+          sudo rsync -a --delete $GITHUB_WORKSPACE/ /mnt/lede-workspace/
+          echo "After rsync:"
+          df -h /mnt
+          sudo mount --bind /mnt/lede-workspace $GITHUB_WORKSPACE
+          echo "After mount:"
+          df -h $GITHUB_WORKSPACE
 
       # 浅克隆 Lede 源码，减少磁盘占用
       - name: Clone Lede source
         run: |
           git clone --depth=1 --single-branch -b master https://github.com/coolsnowwolf/lede.git
-      
+
       - name: Copy Makefile into lede ImageBuilder
         run: |
           echo "Try to copy Makefile:"
@@ -58,7 +60,7 @@ jobs:
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
             gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
           sudo python3 -m pip install setuptools
-          
+
       - name: Update feeds
         run: |
           cd lede
@@ -76,13 +78,13 @@ jobs:
           CONFIG_IB=y
           EOF
           make defconfig
-          
+
       - name: Build firmware & ImageBuilder
         run: |
           cd lede
           make -j$(nproc) V=s
 
-      # 上传前先清理临时文件释放空间
+      # 上传前清理临时文件释放空间
       - name: Clean up build cache
         run: |
           cd lede
