@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+        
       - name: Install dependencies
         run: |
           sudo apt update
@@ -41,6 +44,12 @@ jobs:
           EOF
           make defconfig
 
+      - name: Copy Makefile into lede ImaegBuilder
+        run: |
+          cp ./target/imagebuilder/files/Makefile ./lede/target/imagebuilder/files/Makefile
+          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
+          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
+          
       - name: Build firmware & ImageBuilder
         run: |
           cd lede
@@ -59,4 +68,5 @@ jobs:
           name: imagebuilder-x86_64
           path: |
             lede/bin/targets/**/*.tar.xz
-            lede/bin/targets/**/*.tar.zst
+            lede/bin/targets/**/*.json
+            lede/bin/targets/**/*.manifest
