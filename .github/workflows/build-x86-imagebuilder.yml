@@ -15,22 +15,30 @@ jobs:
         run: |
            ls -lsh
            tree
-           
+
+      - name: Clone Lede source
+        run: |
+          git clone --depth=1 https://github.com/coolsnowwolf/lede.git
+      
+      - name: Copy Makefile into lede ImaegBuilder
+        run: |
+          ls -lah
+          tree target
+          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/
+          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
+          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
+
+      - name: Add helloworld feed (for luci-app-ssr-plus)
+        run: |
+          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
+
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib \
             gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
           sudo python3 -m pip install setuptools
-
-      - name: Clone Lede source
-        run: |
-          git clone --depth=1 https://github.com/coolsnowwolf/lede.git
-
-      - name: Add helloworld feed (for luci-app-ssr-plus)
-        run: |
-          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
-
+          
       - name: Update feeds
         run: |
           cd lede
@@ -48,13 +56,6 @@ jobs:
           CONFIG_IB=y
           EOF
           make defconfig
-
-      - name: Copy Makefile into lede ImaegBuilder
-        run: |
-          tree
-          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
-          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
-          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
           
       - name: Build firmware & ImageBuilder
         run: |
