@@ -20,7 +20,12 @@ jobs:
           sudo apt-get clean
           echo "=== After cleanup ==="
           df -h
-      # 挂载 /mnt 到工作目录
+     
+      - name: Prepare actions dir
+        run: |
+          sudo mkdir -p /mnt/work/_actions
+          sudo rsync -a /home/runner/work/_actions/ /mnt/work/_actions/ || true
+
       - name: Link /mnt to root
         run: |
           sudo mkdir -p /mnt/work
@@ -30,11 +35,6 @@ jobs:
 
       - name: Checkout this repo
         uses: actions/checkout@v3
-
-      - name: Print List
-        run: |
-          ls -lsh
-          tree
 
       # 浅克隆 Lede 源码，减少磁盘占用
       - name: Clone Lede source
