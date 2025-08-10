@@ -97,6 +97,9 @@ jobs:
           name: firmware-x86_64
           path: |
             lede/bin/targets/**/*.img.gz
+            lede/bin/targets/**/*.manifest
+            lede/bin/targets/**/*.json
+            lede/bin/targets/**/*.buildinfo
 
       - name: Upload ImageBuilder
         uses: actions/upload-artifact@v4
