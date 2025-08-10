@@ -50,9 +50,6 @@ jobs:
           echo "Copy succeeded, check content:"
           grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
 
-      - name: Add helloworld feed (for luci-app-ssr-plus)
-        run: |
-          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
 
       - name: Install dependencies
         run: |
@@ -61,12 +58,6 @@ jobs:
             gettext git libncurses-dev libssl-dev python3-pip rsync unzip zlib1g-dev
           sudo python3 -m pip install setuptools
 
-      - name: Update feeds
-        run: |
-          cd lede
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
       - name: Setup x86_64 config
         run: |
           cd lede
@@ -74,10 +65,17 @@ jobs:
           CONFIG_TARGET_x86=y
           CONFIG_TARGET_x86_64=y
           CONFIG_TARGET_x86_64_Generic=y
+          CONFIG_FEED_helloworld=y
           CONFIG_PACKAGE_luci-app-ssr-plus=y
           CONFIG_IB=y
           EOF
           make defconfig
+
+      - name: Update feeds
+        run: |
+          cd lede
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: Build firmware & ImageBuilder
         run: |
