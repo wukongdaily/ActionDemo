@@ -62,27 +62,15 @@ jobs:
         run: |
           grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
 
-      - name: Add helloworld feed (for luci-app-ssr-plus)
+      - name: Setup config for ${{ matrix.platform }}
         run: |
-          echo 'src-git helloworld https://github.com/fw876/helloworld.git' >> lede/feeds.conf.default
+          cp e20c.config lede/.config
 
       - name: Update feeds
         run: |
           cd lede
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-
-      - name: Setup config for ${{ matrix.platform }}
-        run: |
-          cp e20c.config lede/.config
-          cd lede
-          
-
-      - name: Copy Makefile into lede
-        run: |
-          cp ./target/imagebuilder/files/Makefile ./lede/target/imagebuilder/files/Makefile
-          echo "Checking if ROOTFS_PARTSIZE exists in the copied Makefile:"
-          grep "ROOTFS_PARTSIZE" ./lede/target/imagebuilder/files/Makefile || echo "Not found"
 
       - name: Build ImageBuilder for ${{ matrix.platform }}
         run: |
@@ -99,4 +87,3 @@ jobs:
             lede/bin/targets/**/*.manifest
             lede/bin/targets/**/*.json
             lede/bin/targets/**/*.buildinfo
-          
