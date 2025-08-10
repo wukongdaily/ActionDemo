@@ -95,6 +95,8 @@ jobs:
           name: imagebuilder-${{ matrix.platform }}
           path: |
             lede/bin/targets/**/*.tar.xz
+            lede/bin/targets/**/*.img.gz
             lede/bin/targets/**/*.manifest
             lede/bin/targets/**/*.json
+            lede/bin/targets/**/*.buildinfo
           
