@@ -41,15 +41,11 @@ jobs:
       # 浅克隆 Lede 源码，减少磁盘占用
       - name: Clone Lede source
         run: |
-          git clone --depth=1 --single-branch -b master https://github.com/coolsnowwolf/lede.git
+          git clone --depth=1 --single-branch -b rootfspartsize https://github.com/wkccd/lede.git
 
-      - name: Copy Makefile into lede ImageBuilder
+      - name: Cat target/imagebuilder/files/Makefile
         run: |
-          echo "Try to copy Makefile:"
-          cp target/imagebuilder/files/Makefile lede/target/imagebuilder/files/Makefile
-          echo "Copy succeeded, check content:"
           grep "ROOTFS_PARTSIZE" lede/target/imagebuilder/files/Makefile || echo "Not found"
-
 
       - name: Install dependencies
         run: |
